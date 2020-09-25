@@ -458,14 +458,54 @@ compared to other prognostic factors [7,8].
                                   
                                   tabPanel( "99 test",
                                             
-                                            div( verbatimTextOutput("zzL") )  ,
-                                            div( verbatimTextOutput("L1") )  ,
+                                        #    div( verbatimTextOutput("zzL") )  ,
+                                            #div( verbatimTextOutput("L1") )  ,
                                             
-                                  )     
+                                  )     ,
                                   
                                   #~~~~~~~~~~~~~
                                   
-                                  
+                                  tabPanel( "tab 1 repeat Simulation - to adjust or not to adjust",
+                                            
+                                          #  h4(htmlOutput("textWithNumber1a") ),
+                                            fluidRow(
+                                              column(width = 6, offset = 0, style='padding:1px;',
+                                                     
+                                                     div(plotOutput("Lreg.plotx",  width=fig.width8, height=fig.height7)),
+                                                    # div(plotOutput("reg.ploty",  width=fig.width8, height=fig.height7)),
+                                              ) ,
+                                              
+                                              
+                                              fluidRow(
+                                                column(width = 6, offset = 0, style='padding:1px;',
+                                                       
+                                                ))),#
+                                            
+                                            h4(paste("Here we perform simulations investigating the treatment effect estimate and associated standard error when there are
+                                           covariates that are prognostic, covariates unrelated to the outcome, a mix of prognostic and covariates unrelated to the outcome, correlated covariates
+                                           and imbalance prognostic covariates and imbalanced covariates of no prognostic value. For each scenario we adjust and also do not adjust for the covariates.
+                                           The default number of simulations
+                                           is set at a lowly 99 so that results appear quickly. It is advisable to increase this number.
+                                                    The top panel shows the distribution of the treatment effect estimates, the lower panel the associated standard error estimates. The true value is shown
+                                                    by the grey vertical lines. The same covariates are used for investigations of covariates with prognostic value,
+                                                    covariates unrelated to the outcome, a mix of prognostic and covariates unrelated to the outcome.
+                                                    For imbalanced and correlated investigations covariates will be unique. Correlations are capped at +/- 0.37.
+                                                    In the case of the imbalanced scenario, an imbalance is induced for all covariates by way of the treatment arm being derived from a Normal(0.3, 1) and the control arm
+                                                    from a Normal(0, 1) distribution. We can also investigate scenarios of imbalanced covariates derived from a uniform distribution Uniform(-1,1) in control
+                                                    and Uniform(-0.8,1.2) in the treatment arm.
+
+                                                 ")),
+                                            
+                                            h4(paste("Table 2 Summary, sorted by smallest mean squared error (MSE) estimate")),
+                                            
+                                            div( verbatimTextOutput("zzL") )  ,
+                                          #  h4(htmlOutput("textWithNumber99",) ),
+                                           # div( verbatimTextOutput("mse.target") )  ,
+                                            #h4(paste("Here are the true coefficients of the covariates used in the simulation: ")),
+                                        #    div( verbatimTextOutput("betas") )  ,
+                                            
+                                            
+                                            width = 30 )     
                                   
                                   
                                   
@@ -857,7 +897,7 @@ server <- shinyServer(function(input, output   ) {
             zz4 <- glm(y3~.-y-y2,data=d,   family = "binomial")   ## adjusting some X  are prognostic
             f4 <-  summary(zz4)
             
-            zz5 <- glm(y3~z, data=d,   family = "binomial")         ## not adjusting some X  are prognostic
+            zz5 <- glm(y3~z, data=d,   family = "binomial")         ## not adjusting when some X  are prognostic
             f5 <-  summary(zz5)
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~collect estimates
             
@@ -892,6 +932,7 @@ server <- shinyServer(function(input, output   ) {
                 coef(f5)["z", "Pr(>|z|)"] < alpha  , #18
                 
                 
+                #mse for logistic regression https://rdrr.io/cran/dvmisc/man/get_mse.html
                 sum(zz$residuals^2) / zz$df.residual ,
                 sum(zz1$residuals^2) / zz1$df.residual, 
                 sum(zz2$residuals^2) / zz2$df.residual ,
@@ -909,18 +950,18 @@ server <- shinyServer(function(input, output   ) {
                 # mean((d$y3-predict(zz4))^2),
                 # mean((d$y3-predict(zz5))^2),   #24
                 
-                mean(quantile( sum(zz$residuals^2) / zz$df.residual , .025)), #25
-                mean(quantile( sum(zz$residuals^2) / zz$df.residual , .975)), 
-                mean(quantile( sum(zz1$residuals^2) / zz1$df.residual , .025)), #25
-                mean(quantile( sum(zz1$residuals^2) / zz1$df.residual , .975)), 
-                mean(quantile( sum(zz2$residuals^2) / zz2$df.residual , .025)), #25
-                mean(quantile( sum(zz2$residuals^2) / zz2$df.residual , .975)), 
-                mean(quantile( sum(zz3$residuals^2) / zz3$df.residual , .025)), #25
-                mean(quantile( sum(zz3$residuals^2) / zz3$df.residual , .975)), 
-                mean(quantile( sum(zz4$residuals^2) / zz4$df.residual , .025)), #25
-                mean(quantile( sum(zz4$residuals^2) / zz4$df.residual , .975)), 
-                mean(quantile( sum(zz5$residuals^2) / zz5$df.residual , .025)), #25
-                mean(quantile( sum(zz5$residuals^2) / zz5$df.residual , .975)), 
+                (quantile( sum(zz$residuals^2) / zz$df.residual , .025)), #25
+                (quantile( sum(zz$residuals^2) / zz$df.residual , .975)), 
+                (quantile( sum(zz1$residuals^2) / zz1$df.residual , .025)), #25
+                (quantile( sum(zz1$residuals^2) / zz1$df.residual , .975)), 
+                (quantile( sum(zz2$residuals^2) / zz2$df.residual , .025)), #25
+                (quantile( sum(zz2$residuals^2) / zz2$df.residual , .975)), 
+                (quantile( sum(zz3$residuals^2) / zz3$df.residual , .025)), #25
+                (quantile( sum(zz3$residuals^2) / zz3$df.residual , .975)), 
+                (quantile( sum(zz4$residuals^2) / zz4$df.residual , .025)), #25
+                (quantile( sum(zz4$residuals^2) / zz4$df.residual , .975)), 
+                (quantile( sum(zz5$residuals^2) / zz5$df.residual , .025)), #25
+                (quantile( sum(zz5$residuals^2) / zz5$df.residual , .975)), 
                 
                 f$aic,  #37
                 f1$aic,
@@ -929,14 +970,7 @@ server <- shinyServer(function(input, output   ) {
                 f4$aic,
                 f5$aic ,   #42
                 
-                # f$adj.r.squared,  #43
-                # f1$adj.r.squared,
-                # f2$adj.r.squared,
-                # f3$adj.r.squared,
-                # f4$adj.r.squared,
-                # f5$adj.r.squared    #48
-                
-                
+                # https://thestatsgeek.com/2014/02/08/r-squared-in-logistic-regression/
                 1-(-f$deviance/2)/(-f$null.deviance/2),
                 1-(-f1$deviance/2)/(-f1$null.deviance/2),
                 1-(-f2$deviance/2)/(-f2$null.deviance/2),
@@ -972,17 +1006,207 @@ server <- shinyServer(function(input, output   ) {
         )) 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     })
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   
+   output$Lreg.plotx <- renderPlot({         #means
+     
+     # Get the  data
+     
+     res <- Lsimul()$res
+    # res2 <- simul2()$res
+    # res3 <- simul3()$res
+     
+     sample <- random.sample()
+      theta1=sample$v1    
+     
+     d1 <-  density(res[,1] )
+     d2 <-  density(res[,3] )
+     d3 <-  density(res[,5] )
+     d4 <-  density(res[,7] )
+     d5 <-  density(res[,9] )
+     d6 <-  density(res[,11] )
+     # d7 <-  density(res2[,1] )
+     # d8 <-  density(res2[,3] )
+     # d9 <-   density(res3[,1] )
+     # d10 <-  density(res3[,3] )
+     # d11 <-  density(res3[,5] )
+     # d12 <-  density(res3[,7] )
+     # 
+  #   dz <- max(c(d1$y, d2$y, d3$y, d4$y, d5$y, d6$y, d7$y, d8$y  , d9$y, d10$y, d11$y, d12$y  ))
+   #  dx <- range(c(d1$x,d2$x,  d3$x, d4$x, d5$x, d6$x, d7$x, d8$x   , d9$x, d10$x, d11$x, d12$x  ))
+     dz <- max(c(d1$y, d2$y, d3$y, d4$y, d5$y, d6$y  ))
+     dx <- range(c(d1$x,d2$x,  d3$x, d4$x, d5$x, d6$x   ))
+     if (input$dist %in% "All") {
+       
+       plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
+            xlab="Treatment effect",  
+            ylab="Density")                           
+       lines( (d2), col = "black", lty=w, lwd=ww)  
+       lines( (d3), col = "red", lty=wz, lwd=ww)    
+       lines( (d4), col = "red", lty=w, lwd=ww)          
+       lines( (d5), col = "blue", lty=wz, lwd=ww)       
+       lines( (d6), col = "blue", lty=w, lwd=ww)       
+       # lines( (d7), col = "purple", lty=wz, lwd=ww)       
+       # lines( (d8), col = "purple", lty=w, lwd=ww)       
+       
+       # lines( (d9), col = "green", lty=wz, lwd=ww)       
+       # lines( (d10), col = "green", lty=w, lwd=ww)       
+       # lines( (d11), col = "grey", lty=wz, lwd=ww)       
+       # lines( (d12), col = "grey", lty=w, lwd=ww)  
+       
+     }
+     
+     else if (input$dist %in% "d1") {  #remove
+       
+       
+       plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
+            xlab="Treatment effect",  
+            ylab="Density")  
+       lines( (d2), col = "black", lty=w, lwd=ww)  
+       
+     }
+     
+     else if (input$dist %in% "d3") {  #remove
+       
+       
+       plot((d3), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,col="red",
+            xlab="Treatment effect",  
+            ylab="Density")               
+       lines( (d4), col = "red", lty=w, lwd=ww)          
+       
+     }
+     
+     else if (input$dist %in% "d5") {
+       
+       plot((d5), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="blue",
+            xlab="Treatment effect",  
+            ylab="Density")                    
+       
+       lines( (d6), col = "blue", lty=w, lwd=ww)       
+       
+     }
+     
+     # else if (input$dist %in% "d7") {
+     #   
+     #   plot((d7), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="purple",
+     #        xlab="Treatment effect", 
+     #        ylab="Density") 
+     #   
+     #   lines( (d8), col = "purple", lty=w, lwd=ww)     
+     #   
+     # }
+     # else if (input$dist %in% "d9") {
+     #   
+     #   plot((d9), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="green",
+     #        xlab="Treatment effect", 
+     #        ylab="Density")  
+     #   
+     #   lines( (d10), col = "green", lty=w, lwd=ww)     
+     #   
+     # }
+     # 
+     # else if (input$dist %in% "d11") {
+     #   
+     #   plot((d11), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="grey",
+     #        xlab="Treatment effect",  
+     #        ylab="Density")  
+     #   
+     #   lines( (d12), col = "grey", lty=w, lwd=ww)     
+     #   
+     # }
+     
+     
+     # abline(v = theta1, col = "darkgrey")                
+     # legend("topright",       # Add legend to density
+     #        legend = c(" adj. for true prognostic covariates", 
+     #                   " not adj. for true prognostic covariates" ,
+     #                   " adj. for covariates unrelated to outcome", 
+     #                   " not adj. for covariates unrelated to outcome",
+     #                   " adj. for mix of prognostic and unrelated to outcome", 
+     #                   " not adj. mix of prognostic and unrelated to outcome", 
+     #                   " adj. for correlated prognostic covariates", 
+     #                   " not adj. for correlated prognostic covariates",
+     #                   " adj. for imbalanced prognostic covariates", 
+     #                   " not adj. for imbalanced prognostic covariates", 
+     #                   " adj. for imbalanced covariates unrelated to outcome", 
+     #                   " not adj. imbalanced covariates unrelated to outcome"
+     #                   
+     #        ),
+     #        col = c("black", "black","red","red","blue", "blue", "purple", "purple", "green", "green", "grey", "grey"),
+     #        lty = c(wz, w,wz,w,wz,w,wz,w,wz,w,wz,w)  ,lwd=ww
+     #        , bty = "n", cex=1)
+     
+     
+     abline(v = theta1, col = "darkgrey")                
+     legend("topright",       # Add legend to density
+            legend = c(" adj. for true prognostic covariates", 
+                       " not adj. for true prognostic covariates" ,
+                       " adj. for covariates unrelated to outcome", 
+                       " not adj. for covariates unrelated to outcome",
+                       " adj. for mix of prognostic and unrelated to outcome", 
+                       " not adj. mix of prognostic and unrelated to outcome"#, 
+                       # " adj. for correlated prognostic covariates", 
+                       # " not adj. for correlated prognostic covariates",
+                       # " adj. for imbalanced prognostic covariates", 
+                       # " not adj. for imbalanced prognostic covariates", 
+                       # " adj. for imbalanced covariates unrelated to outcome", 
+                       # " not adj. imbalanced covariates unrelated to outcome"
+                       
+            ),
+            col = c("black", "black","red","red","blue", "blue"),
+            lty = c(wz, w,wz,w,wz,w,wz,w,wz,w,wz,w)  ,lwd=ww
+            , bty = "n", cex=1)
+     
+     
+     
+     
+   })
+   
     
     
    
-   output$L1 <- renderPrint({
-     
-     d <- Lsimul()$result
-     
-     return(print(d)) 
-     
-   })
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+   # output$L1 <- renderPrint({
+   #   
+   #   d <- Lsimul()$result
+   #   
+   #   return(print(d)) 
+   #   
+   # })
     
     
     
@@ -993,14 +1217,16 @@ server <- shinyServer(function(input, output   ) {
    #  result2 <- Lsimul2()$result  
   #   result3 <- Lsimul3()$result  
      
-     q1.result <- simul()$q1.result  
-     q2.result <- simul()$q2.result  
+     q1.result <- Lsimul()$q1.result  
+     q2.result <- Lsimul()$q2.result  
      
    #  q1.result2 <- simul2()$q1.result  
   #   q2.result2 <- simul2()$q2.result  
      
    #  q1.result3 <- simul3()$q1.result  
   #   q2.result3 <- simul3()$q2.result  
+     
+     # mean, lower95% mean Or, upper95% mean Or, se,  power, mse, aic, r2
      
      zz <- rbind(
        (c( p4(result[1])   ,     p2(q1.result[1])  ,  p2(q2.result[1])   , p4(result[2] ) ,  p4(result[13] ) ,  p4(result[19] ) ,      p4(result[37] )    ,  p4(result[43] )         )) ,
@@ -1058,37 +1284,12 @@ server <- shinyServer(function(input, output   ) {
      return(d)
    })
     
-    
-    
-    
-    
-    
-    
-    
-    
+
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # SIMULATION CODE STARTS HERE
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # here is code to simulate scenarios prognostic covariates, covariates unrelated to y, mix of pro and unrelated to y covariates, 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     simul <- reactive({
