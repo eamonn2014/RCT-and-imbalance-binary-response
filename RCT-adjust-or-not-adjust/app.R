@@ -458,6 +458,7 @@ compared to other prognostic factors [7,8].
                                   
                                   tabPanel( "99 test",
                                             
+                                            div( verbatimTextOutput("zzL") )  ,
                                             div( verbatimTextOutput("L1") )  ,
                                             
                                   )     
@@ -735,6 +736,8 @@ server <- shinyServer(function(input, output   ) {
         
         sample <- random.sample()
         
+        #randomi <- randomness()$randomi
+        
         K=sample$K
         Kp=sample$Kp
         pow=sample$pow
@@ -778,22 +781,16 @@ server <- shinyServer(function(input, output   ) {
    Lsimul <- reactive({
         
         sample <- random.sample()
-        # need to rename to avoid recursive issues
-        # K1=sample$K
-        # Kp=sample$Kp
-        # pow=sample$pow
-        # sigma1=sample$sigma
-        # theta1=sample$theta        
-        # alpha=sample$alpha  
-        # covar=sample$covar
-        # Fact=sample$Fact
-        
+         
         simuls=sample$simuls
-        
-        # N1 <- mcmc()$N # 
+    
         Lsimfun <- function( ) {
             
-        trt.coef   =  design()$trt.coef      # log odds ratio so 1 -> 2.718, so 1 is LARGE
+        # randomness here
+        n <- as.numeric(input$n )
+        randomi <- runif(n)  
+          
+        trt.coef   =      design()$trt.coef      # log odds ratio so 1 -> 2.718, so 1 is LARGE
         age.coef       =  design()$age.coef      # log odds of 1 over the age range
         smoke.coef     =  design()$smoke.coef     # this is odds of 1.5
         bmi.coef       =  design()$bmi.coef     # this is an odds of 1..50:50
@@ -981,7 +978,7 @@ server <- shinyServer(function(input, output   ) {
    
    output$L1 <- renderPrint({
      
-     d <- Lsimul()$res
+     d <- Lsimul()$result
      
      return(print(d)) 
      
@@ -989,9 +986,77 @@ server <- shinyServer(function(input, output   ) {
     
     
     
+   table.simL <- reactive({
+     
+     res <- Lsimul()$res  
+     result <- Lsimul()$result  
+   #  result2 <- Lsimul2()$result  
+  #   result3 <- Lsimul3()$result  
+     
+     q1.result <- simul()$q1.result  
+     q2.result <- simul()$q2.result  
+     
+   #  q1.result2 <- simul2()$q1.result  
+  #   q2.result2 <- simul2()$q2.result  
+     
+   #  q1.result3 <- simul3()$q1.result  
+  #   q2.result3 <- simul3()$q2.result  
+     
+     zz <- rbind(
+       (c( p4(result[1])   ,     p2(q1.result[1])  ,  p2(q2.result[1])   , p4(result[2] ) ,  p4(result[13] ) ,  p4(result[19] ) ,      p4(result[37] )    ,  p4(result[43] )         )) ,
+       (c( p4(result[3])   ,     p2(q1.result[3]) ,   p2(q2.result[3])   , p4(result[4] ) ,  p4(result[14] ) ,  p4(result[20] ) ,      p4(result[38] )    ,  p4(result[44] )        )) ,
+       (c( p4(result[5])   ,     p2(q1.result[5]) ,   p2(q2.result[5])   , p4(result[6] ) ,  p4(result[15] ) ,  p4(result[21] ) ,      p4(result[39] )    ,  p4(result[45] )        )) ,
+       (c( p4(result[7])   ,     p2(q1.result[7]) ,   p2(q2.result[7])   , p4(result[8] ) ,  p4(result[16] ) ,  p4(result[22] ) ,      p4(result[40] )    ,  p4(result[46] )         )) ,
+       (c( p4(result[9])   ,     p2(q1.result[9]) ,   p2(q2.result[9])   , p4(result[10] ) , p4(result[17] ) ,  p4(result[23] ) ,      p4(result[41] )    ,  p4(result[47] )           )) ,
+       (c( p4(result[11])  ,     p2(q1.result[11]) ,  p2(q2.result[11])  , p4(result[12] ) , p4(result[18] ) ,  p4(result[24] ) ,      p4(result[42] )    ,  p4(result[48] )         )) # ,
+       # (c( p4(result2[1])  ,     p2(q1.result2[1]),   p2(q2.result2[1])  , p4(result2[2] ) , p4(result2[5] ) ,  p4(result2[7] ) ,      p4(result2[13] )   ,  p4(result2[15] )         )) ,
+       # (c( p4(result2[3])  ,     p2(q1.result2[3])  , p2(q2.result2[3])  , p4(result2[4] ) , p4(result2[6] ) ,  p4(result2[8] ) ,      p4(result2[14] )   ,  p4(result2[16] )          )),
+       # (c( p4(result3[1])  ,     p2(q1.result3[1])  , p2(q2.result3[1])   , p4(result3[2] ) ,  p4(result3[9] ) ,  p4(result3[13] ) , p4(result3[25] )   ,  p4(result3[29] )         )) ,
+       # (c( p4(result3[3])  ,     p2(q1.result3[3]) ,  p2(q2.result3[3])   , p4(result3[4] ) ,  p4(result3[10] ) ,  p4(result3[14] ) ,p4(result3[26] )   ,  p4(result3[30] )         )) ,
+       # (c( p4(result3[5])  ,     p2(q1.result3[5]) ,  p2(q2.result3[5])   , p4(result3[6] ) ,  p4(result3[11] ) ,  p4(result3[15] ) , p4(result3[27] )  ,  p4(result3[31] )         )) ,
+       # (c( p4(result3[7])  ,     p2(q1.result3[7]) ,  p2(q2.result3[7])   , p4(result3[8] ) ,  p4(result3[12] ) ,  p4(result3[16] ) , p4(result3[28] )  ,  p4(result3[32]  )         )) 
+     ) 
+     
+     zz <- as.data.frame(zz)
+     
+     colnames(zz) <- c("Mean  ", "Lower 95%CI", "Upper 95%CI", "Stand.error", "Power ","B" , "sigma","R2")
+     
+     zz <- data.frame(lapply(zz, function(x) as.numeric(as.character(x))))
+     zz <- as.data.frame(zz)
+     rownames(zz)<- c(
+       " adj. for true prognostic covariates", 
+       " not adj. for true prognostic covariates" ,
+       " adj. for non prognostic covariates", 
+       " not adj. for non prognostic covariates",
+       " adj. for some non prognostic covariates", 
+       " not adj. when some prognostic covariates"#, 
+       # " adj. for correlated prognostic covariates", 
+       # " not adj. for correlated prognostic covariates",
+       # " adj. for imbalanced prognostic covariates",
+       # " not adj. for imbalanced prognostic covariates",  
+       # " adj. for non prognostic imbalanced covariates",
+       # " not adj. for non prognostic imbalanced covariates"
+     )
+     zz <- zz[order(zz$B),]
+     
+     colnames(zz) <- c("Mean  ", "Lower 95%CI", "Upper 95%CI", "Std.error", "Power ","MSE" , "AIC","McFadden's R2")
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     
+     return(list(  
+       
+       zz=zz
+       
+     )) 
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   })
+   
     
-    
-    
+   output$zzL <- renderPrint({
+     
+     d <- table.simL()$zz
+     
+     return(d)
+   })
     
     
     
