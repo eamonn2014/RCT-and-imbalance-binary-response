@@ -105,7 +105,12 @@
   }
 
   RR=.37 ## used to limit correlations between variables
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  
+
+
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2 , paper another option to try
                   # paper
                   useShinyalert(),  # Set up shinyalert
@@ -193,11 +198,11 @@ compared to other prognostic factors [7,8].
                                       
                                       tags$hr(),
                                       splitLayout(
-                                        textInput('p1', 
-                                                  div(h5(tags$span(style="color:blue", "Prob in placebo"))), ".35"),
+                                        textInput('p1', #
+                                                  div(h5(tags$span(style="color:blue", "Prob in placebo"))), ".35"),  
                                         
                                           textInput('theta', 
-                                                    div(h5(tags$span(style="color:blue", "Treatment effect"))), ".223"),
+                                                    div(h5(tags$span(style="color:blue", "Treatment effect"))), "0.4054651"),  #log(1.5)
                                           
                                           textInput('sigma', 
                                                     div(h5(tags$span(style="color:blue", "Residual variation"))), ".85")
@@ -495,22 +500,33 @@ server <- shinyServer(function(input, output   ) {
         
         #Po <- bpower(p1=p1, odds.ratio=theta, power=pow, alpha=alpha)
         
-        post.odds <- p1/(1-p1) * theta
+        post.odds <- p1/(1-p1) * exp(theta)
         post.prob <- post.odds/(1+post.odds)
         
         Po <- bsamsize(p1, post.prob, fraction=.5, alpha=alpha, power=pow)
         
+       
 
+         
         MM <- N <-ceiling(Po[1][[1]])*2  # total will always be even
 
         bigN <- MM  
         N1=MM/2
         N2=N1
+        
+        
+        se. <- sqrt(  p1*(1-p1) /(N1) +    post.prob*(1- post.prob)/(N2) ) 
+        
+        
+        
+        
+        
+        
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # For the se of diff, n1=n2 , a simulation may have different numbers allocated to treatments 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        return(list(  
+        return(list(  se.=se.,
   
                       Na=N1,
                       Nb=N2,
@@ -581,6 +597,9 @@ server <- shinyServer(function(input, output   ) {
             
             lp <- a+ X[,1:Kp] %*% b[1:Kp] + theta*z # just have 3 variables associated with response
             y3 <- ifelse(randomi < plogis(lp), 1, 0)   # one liner RANDOM!!!
+            
+            
+            
             
             data.frame(X=X, y=y, z=z, y2=y2, y3=y3)
        
@@ -1130,6 +1149,75 @@ server <- shinyServer(function(input, output   ) {
                , bty = "n", cex=1)
     })
     
+    
+    
+    # Need to be able to calculate logistic regression se analytically base on p1 and OR?
+    # so for now we do simulation, not ideal
+    
+    simulx <- reactive({
+      
+      sample <- random.sample()
+      # need to rename to avoid recursive issues
+      K1=sample$K
+      Kp=sample$Kp
+      pow=sample$pow
+      sigma1=sample$sigma
+      theta1=sample$theta        
+      alpha=sample$alpha  
+      covar=sample$covar
+      Fact=sample$Fact
+      p1=sample$p1
+      simuls=sample$simuls
+    
+      N<- mcmc()$N
+    
+      ## function to simulate simple dataset #####################################################################
+      
+      fun.d<-function(nsample, drug.allocation, 
+                      alpha,  beta.drug,
+                      seed=NULL){ 
+        
+        if (!is.null(seed)) set.seed(seed)
+        
+        drug<- (rbinom(nsample, 1, prob =drug.allocation ))   
+        
+        Xmat <- model.matrix(~ drug )
+        beta.vec <- c(alpha,  beta.drug )
+        
+        lin.pred <- Xmat[,] %*% beta.vec                 # Value of lin.predictor
+        exp.p <- exp(lin.pred) / (1 + exp(lin.pred))     # Expected proportion
+        y <- rbinom(n = nsample, size = 1, prob = exp.p) # Add binomial noise
+        #y<- runif(nsample) <  exp.p                     # alternatively ads noise in this way
+        
+        d<-as.data.frame(cbind(y, drug))         # create a dataset
+        
+        return(d)
+        
+      }
+      
+     # function to pull out se######################################################################################
+      simfunc <- function(d) {
+        fit1 <- glm(y  ~ drug , d, family = binomial) 
+        c( summary(fit1)$coef["drug","Std. Error"] )
+      }
+      
+     ################################################################################################################
+     out <- replicate(1000, simfunc(fun.d( nsample=N, drug.allocation=0.5,    
+                                          alpha=log(p1),  
+                                          beta.drug=(theta1))))
+    
+    ################################################################################################################
+     se. <- mean(out)
+    
+    return(list(   
+      
+      se.=se.
+      
+    ))
+    
+    })
+    
+    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # SIMUALTION PLOT
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -1165,7 +1253,10 @@ server <- shinyServer(function(input, output   ) {
         d12 <-  density(res3[,8] )
         
         # we may have imbalance in numbers, otherwise the se will not be exactly correct and this maybe seen in plot
-        se. <-  sqrt( sigma1^2/n1 + sigma1^2/n2 )   #ditto
+     #   se. <-  sqrt( sigma1^2/n1 + sigma1^2/n2 )   #ditto
+        
+        #se. <- mcmc()$se.
+        se. <- simulx()$se.
         
         dz <- max(c(d1$y, d2$y, d3$y, d4$y, d5$y, d6$y, d7$y, d8$y  , d9$y, d10$y, d11$y, d12$y    ))
         dx <- range(c(d1$x,d2$x,  d3$x, d4$x, d5$x, d6$x, d7$x, d8$x   , d9$x, d10$x, d11$x, d12$x    ))
