@@ -120,7 +120,7 @@
                       direction = "bottom"
                   ),
                   
-            h2("Covariate adjustment in randomised controlled trials (RCTs) with a continuous response"), 
+            h2("Covariate adjustment in randomised controlled trials (RCTs) with a binary response"), 
                 
             h4("The main value of randomization in RCTs is that it eliminates selection bias, treatment groups are on average comparable in terms of known
                 and unknown patient characteristics [1]. But as Stephen Senn has stated '1) randomised controlled trials don't deliver balance *even* if they are very large and 
@@ -152,7 +152,7 @@
                 such as age as in the GUSTO-1 trial. This phenomenon is observed in many prognostic evaluations of RCTs:
 treatment has a 'statistically significant' impact on outcome, but its relevance is small
 compared to other prognostic factors [7,8].
-                The limited simulations I have done support adjusting over not adjusting, the mean square error being smaller when adjusting. 
+                The limited simulations I have done support adjusting over not adjusting, the AIC being smaller when adjusting. 
                 Note we have ideal data conforming to 
                 statistical distributions, no missing data and all covariates are truly linear and continuous.
                 "), 
@@ -193,7 +193,7 @@ compared to other prognostic factors [7,8].
                                       ),
                                        
                                       textInput('Fact', 
-                                                div(h5(tags$span(style="color:blue", "Covariate coefficients. Here a multiplicative factor is selected so that betas are randomly chosen between (-X*treatment effect) and (X*treatment effect)"))), "1"),
+                                                div(h5(tags$span(style="color:blue", "Covariate coefficients. Here a multiplicative factor is selected so that betas are randomly chosen between (-X*treatment effect) and (X*treatment effect)"))), "3"),
                                       
                                       
                                       tags$hr(),
@@ -202,10 +202,12 @@ compared to other prognostic factors [7,8].
                                                   div(h5(tags$span(style="color:blue", "Prob in placebo"))), ".35"),  
                                         
                                           textInput('theta', 
-                                                    div(h5(tags$span(style="color:blue", "Treatment effect"))), "0.4054651"),  #log(1.5)
+                                                    div(h5(tags$span(style="color:blue", "Treatment effect log odds ratio"))), "log(1.5)")  #log(1.5)
+                                        
+                                      
                                           
-                                          textInput('sigma', 
-                                                    div(h5(tags$span(style="color:blue", "Residual variation"))), ".85")
+                                          # textInput('sigma', 
+                                          #           div(h5(tags$span(style="color:blue", "Residual variation"))), ".85")
                                       ),
                                       
                                       splitLayout(
@@ -296,11 +298,11 @@ compared to other prognostic factors [7,8].
 
                                                  ")),
                                             
-                                            h4(paste("Table 2 Summary, sorted by smallest mean squared error (MSE) estimate")),
+                                            h4(paste("Table 2 Summary, sorted by smallest AIC estimate")),
                                            
                                             div( verbatimTextOutput("zz") )  ,
-                                            h4(htmlOutput("textWithNumber99",) ),
-                                            div( verbatimTextOutput("mse.target") )  ,
+                                           # h4(htmlOutput("textWithNumber99",) ),
+                                           # div( verbatimTextOutput("mse.target") )  ,
                                             h4(paste("Here are the true coefficients of the covariates used in the simulation: ")),
                                             div( verbatimTextOutput("betas") )  ,
                                             
@@ -444,13 +446,15 @@ server <- shinyServer(function(input, output   ) {
         
         pow <- as.numeric(unlist(strsplit(input$pow,",")))
         
-        sigma <- as.numeric(unlist(strsplit(input$sigma,",")))
+      #  sigma <- as.numeric(unlist(strsplit(input$sigma,",")))
         
         alpha <- as.numeric(unlist(strsplit(input$alpha,",")))
         
         p1 <- as.numeric(unlist(strsplit(input$p1,",")))
         
-        theta <- (as.numeric(unlist(strsplit(input$theta,","))))    
+      #  theta <- (as.numeric(unlist(strsplit(input$theta,","))))    
+      theta <- as.numeric(    eval(parse(text= (input$theta)) ) )
+        
         
         simuls <- (as.numeric(unlist(strsplit(input$simuls,","))))    
         
@@ -463,7 +467,7 @@ server <- shinyServer(function(input, output   ) {
             Kp=Kp,  
             pow=pow/100,
             p1=p1,
-            sigma=sigma, 
+          #  sigma=sigma, 
             alpha=alpha/100, 
             theta=theta,
             simuls=simuls,
@@ -488,7 +492,7 @@ server <- shinyServer(function(input, output   ) {
         Kp=sample$Kp
         pow=sample$pow
         p1=sample$p1
-        sigma=sample$sigma
+       # sigma=sample$sigma
         theta=sample$theta
         alpha=sample$alpha
         covar=sample$covar
@@ -531,8 +535,8 @@ server <- shinyServer(function(input, output   ) {
                       Na=N1,
                       Nb=N2,
                       N=N, 
-                      bigN=bigN,
-                      sigma=sigma
+                      bigN=bigN
+                     # sigma=sigma
                       
                       ))
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -552,7 +556,7 @@ server <- shinyServer(function(input, output   ) {
         K1=sample$K
         Kp=sample$Kp
         pow=sample$pow
-        sigma1=sample$sigma
+       # sigma1=sample$sigma
         theta1=sample$theta        
         alpha=sample$alpha  
         covar=sample$covar
@@ -755,7 +759,7 @@ server <- shinyServer(function(input, output   ) {
         K1=sample$K
         Kp=sample$Kp
         pow=sample$pow
-        sigma1=sample$sigma
+     #   sigma1=sample$sigma
         theta1=sample$theta        
         alpha=sample$alpha  
         covar=sample$covar
@@ -773,7 +777,7 @@ server <- shinyServer(function(input, output   ) {
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # simulate models many times collect estimate and SE
         
-        simfun2 <- function(N=N1, K=K1, a=log(p1), sigma=sigma1, theta=theta1, b=b1) {
+        simfun2 <- function(N=N1, K=K1, a=log(p1), theta=theta1, b=b1) {
           randomi <- runif(N)  
             x <- Matrix(runif(K*K,-RR,RR), K)   # create a correlation matrix randomly , wont allow very high correlations
             
@@ -874,7 +878,7 @@ server <- shinyServer(function(input, output   ) {
         K1=sample$K
         Kp=sample$Kp
         pow=sample$pow
-        sigma1=sample$sigma
+      #  sigma1=sample$sigma
         theta1=sample$theta        
         alpha=sample$alpha  
         covar=sample$covar
@@ -891,7 +895,7 @@ server <- shinyServer(function(input, output   ) {
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # simulate models many times collect estimate and SE
         
-        simfun3<- function(N=N1, K=K1, a=log(p1), sigma=sigma1, theta=theta1, b=b1) {
+        simfun3<- function(N=N1, K=K1, a=log(p1),  theta=theta1, b=b1) {
           randomi <- runif(N)  
             MM = N
             N2=MM/2
@@ -1161,7 +1165,7 @@ server <- shinyServer(function(input, output   ) {
       K1=sample$K
       Kp=sample$Kp
       pow=sample$pow
-      sigma1=sample$sigma
+    #  sigma1=sample$sigma
       theta1=sample$theta        
       alpha=sample$alpha  
       covar=sample$covar
@@ -1232,7 +1236,7 @@ server <- shinyServer(function(input, output   ) {
         res3 <- simul3()$res
         
         sample <- random.sample()
-        sigma1=sample$sigma
+      #  sigma1=sample$sigma
         N1 <- mcmc()$N # 
         
         n1 <- mcmc()$Na
@@ -1381,7 +1385,10 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # table for simulation summary
     table.sim <- reactive({
-        
+      
+      sample <- random.sample()
+      theta1=sample$theta       
+      
         res <- simul()$res  
         result <- simul()$result  
         result2 <- simul2()$result  
@@ -1397,18 +1404,18 @@ server <- shinyServer(function(input, output   ) {
         q2.result3 <- simul3()$q2.result  
 
         zz <- rbind(
-          (c( p4(result[1])   ,     p2(q1.result[1])  ,  p2(q2.result[1])   , p4(result[2] ) ,  p4(result[13] ) ,  p4(result[19] ) ,      p4(result[37] )    ,  p4(result[43] )         )) ,
-          (c( p4(result[3])   ,     p2(q1.result[3]) ,   p2(q2.result[3])   , p4(result[4] ) ,  p4(result[14] ) ,  p4(result[20] ) ,      p4(result[38] )    ,  p4(result[44] )        )) ,
-          (c( p4(result[5])   ,     p2(q1.result[5]) ,   p2(q2.result[5])   , p4(result[6] ) ,  p4(result[15] ) ,  p4(result[21] ) ,      p4(result[39] )    ,  p4(result[45] )        )) ,
-          (c( p4(result[7])   ,     p2(q1.result[7]) ,   p2(q2.result[7])   , p4(result[8] ) ,  p4(result[16] ) ,  p4(result[22] ) ,      p4(result[40] )    ,  p4(result[46] )         )) ,
-          (c( p4(result[9])   ,     p2(q1.result[9]) ,   p2(q2.result[9])   , p4(result[10] ) , p4(result[17] ) ,  p4(result[23] ) ,      p4(result[41] )    ,  p4(result[47] )           )) ,
-          (c( p4(result[11])  ,     p2(q1.result[11]) ,  p2(q2.result[11])  , p4(result[12] ) , p4(result[18] ) ,  p4(result[24] ) ,      p4(result[42] )    ,  p4(result[48] )         )) ,
-          (c( p4(result2[1])  ,     p2(q1.result2[1]),   p2(q2.result2[1])  , p4(result2[2] ) , p4(result2[5] ) ,  p4(result2[7] ) ,      p4(result2[13] )   ,  p4(result2[15] )         )) ,
-          (c( p4(result2[3])  ,     p2(q1.result2[3])  , p2(q2.result2[3])  , p4(result2[4] ) , p4(result2[6] ) ,  p4(result2[8] ) ,      p4(result2[14] )   ,  p4(result2[16] )          )),
-          (c( p4(result3[1])  ,     p2(q1.result3[1])  , p2(q2.result3[1])   , p4(result3[2] ) ,  p4(result3[9] ) ,  p4(result3[13] ) , p4(result3[25] )   ,  p4(result3[29] )         )) ,
-          (c( p4(result3[3])  ,     p2(q1.result3[3]) ,  p2(q2.result3[3])   , p4(result3[4] ) ,  p4(result3[10] ) ,  p4(result3[14] ) ,p4(result3[26] )   ,  p4(result3[30] )         )) ,
-          (c( p4(result3[5])  ,     p2(q1.result3[5]) ,  p2(q2.result3[5])   , p4(result3[6] ) ,  p4(result3[11] ) ,  p4(result3[15] ) , p4(result3[27] )  ,  p4(result3[31] )         )) ,
-          (c( p4(result3[7])  ,     p2(q1.result3[7]) ,  p2(q2.result3[7])   , p4(result3[8] ) ,  p4(result3[12] ) ,  p4(result3[16] ) , p4(result3[28] )  ,  p4(result3[32]  )         )) 
+          (c( p4(result[1])   ,     p2(q1.result[1])  ,  p2(q2.result[1])   , p4(result[2] ) ,  p4(result[13] ) ,  p4(result[1] -theta1) ,      p4(result[37] )    ,  p4(result[43] )         )) ,
+          (c( p4(result[3])   ,     p2(q1.result[3]) ,   p2(q2.result[3])   , p4(result[4] ) ,  p4(result[14] ) ,  p4(result[3] -theta1) ,      p4(result[38] )    ,  p4(result[44] )        )) ,
+          (c( p4(result[5])   ,     p2(q1.result[5]) ,   p2(q2.result[5])   , p4(result[6] ) ,  p4(result[15] ) ,  p4(result[5] -theta1) ,      p4(result[39] )    ,  p4(result[45] )        )) ,
+          (c( p4(result[7])   ,     p2(q1.result[7]) ,   p2(q2.result[7])   , p4(result[8] ) ,  p4(result[16] ) ,  p4(result[7] -theta1) ,      p4(result[40] )    ,  p4(result[46] )         )) ,
+          (c( p4(result[9])   ,     p2(q1.result[9]) ,   p2(q2.result[9])   , p4(result[10] ) , p4(result[17] ) ,  p4(result[9] -theta1) ,      p4(result[41] )    ,  p4(result[47] )           )) ,
+          (c( p4(result[11])  ,     p2(q1.result[11]) ,  p2(q2.result[11])  , p4(result[12] ) , p4(result[18] ) ,  p4(result[11] -theta1) ,      p4(result[42] )    ,  p4(result[48] )         )) ,
+          (c( p4(result2[1])  ,     p2(q1.result2[1]),   p2(q2.result2[1])  , p4(result2[2] ) , p4(result2[5] ) ,  p4(result2[1] -theta1) ,      p4(result2[13] )   ,  p4(result2[15] )         )) ,
+          (c( p4(result2[3])  ,     p2(q1.result2[3])  , p2(q2.result2[3])  , p4(result2[4] ) , p4(result2[6] ) ,  p4(result2[3] -theta1) ,      p4(result2[14] )   ,  p4(result2[16] )          )),
+          (c( p4(result3[1])  ,     p2(q1.result3[1])  , p2(q2.result3[1])   , p4(result3[2] ) ,  p4(result3[9] ) ,  p4(result3[1] -theta1) , p4(result3[25] )   ,  p4(result3[29] )         )) ,
+          (c( p4(result3[3])  ,     p2(q1.result3[3]) ,  p2(q2.result3[3])   , p4(result3[4] ) ,  p4(result3[10] ) ,  p4(result3[3] -theta1) ,p4(result3[26] )   ,  p4(result3[30] )         )) ,
+          (c( p4(result3[5])  ,     p2(q1.result3[5]) ,  p2(q2.result3[5])   , p4(result3[6] ) ,  p4(result3[11] ) ,  p4(result3[5] -theta1) , p4(result3[27] )  ,  p4(result3[31] )         )) ,
+          (c( p4(result3[7])  ,     p2(q1.result3[7]) ,  p2(q2.result3[7])   , p4(result3[8] ) ,  p4(result3[12] ) ,  p4(result3[7] -theta1) , p4(result3[28] )  ,  p4(result3[32]  )         )) 
         ) 
         
         zz <- as.data.frame(zz)
@@ -1433,7 +1440,12 @@ server <- shinyServer(function(input, output   ) {
         )
         zz <- zz[order(zz$B),]
         
-        colnames(zz) <- c("Mean  ", "Lower 95%CI", "Upper 95%CI", "Std.error", "Power ","MSE" , "sigma","R2")
+        
+       # colnames(zz) <- c("Mean  ", "Lower 95%CI", "Upper 95%CI", "Std.error", "Power ","MSE" , "sigma","R2")
+        colnames(zz) <- c("Mean  ", "Lower 95%CI", "Upper 95%CI", "Std.error", "Power ","bias" , "AIC","McFadden's R2")
+        zz <- zz[order(zz$AIC),]
+        #zz$MSE <- NULL
+        #colnames(zz) <- c("Mean  ", "Lower 95%CI", "Upper 95%CI", "Std.error", "Power ",  "AIC","McFadden's R2")
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
         return(list(  
@@ -1479,7 +1491,7 @@ server <- shinyServer(function(input, output   ) {
     output$betas <- renderPrint({
         
         d <- simul2()$betas
-        return(print(d))
+      return(print(d))
         
     })
   
