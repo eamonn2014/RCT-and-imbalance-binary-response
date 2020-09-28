@@ -574,7 +574,7 @@ server <- shinyServer(function(input, output   ) {
         b1 <- round(sort(runif(K1, -theta1*Fact,theta1*Fact)), digits=2) 
         
         
-        simfun <- function(N=N1, K=K1, a=log(p1), sigma=sigma1, theta=theta1, b=b1) {
+        simfun <- function(N=N1, K=K1, a=log(p1), sigma=sigma1, theta=(theta1), b=b1) {
             
             randomi <- runif(N)  
             # we can select this, does not seem to have a big impact
@@ -777,7 +777,7 @@ server <- shinyServer(function(input, output   ) {
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # simulate models many times collect estimate and SE
         
-        simfun2 <- function(N=N1, K=K1, a=log(p1), theta=theta1, b=b1) {
+        simfun2 <- function(N=N1, K=K1, a=log(p1), theta=(theta1), b=b1) {
           randomi <- runif(N)  
             x <- Matrix(runif(K*K,-RR,RR), K)   # create a correlation matrix randomly , wont allow very high correlations
             
@@ -895,7 +895,7 @@ server <- shinyServer(function(input, output   ) {
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # simulate models many times collect estimate and SE
         
-        simfun3<- function(N=N1, K=K1, a=log(p1),  theta=theta1, b=b1) {
+        simfun3<- function(N=N1, K=K1, a=log(p1),  theta=(theta1), b=b1) {
           randomi <- runif(N)  
             MM = N
             N2=MM/2
@@ -933,15 +933,15 @@ server <- shinyServer(function(input, output   ) {
           zz <- glm(y~.-y2,  data=d,   family = "binomial")      ## adjusting for prognostic X, y2 is not included by use of the '-'
           f <-  summary(zz)
           
-          zz1 <- glm(y~z,  data=d,   family = "binomial")      ## adjusting for prognostic X, y2 is not included by use of the '-'
-          f <-  summary(zz1)
+          zz1 <- glm(y~z-y2,  data=d,   family = "binomial")      ## adjusting for prognostic X, y2 is not included by use of the '-'
+          f1 <-  summary(zz1)
           
        
           zz2 <- glm(y2~.-y,  data=d,   family = "binomial")      ## adjusting for prognostic X, y2 is not included by use of the '-'
-          f <-  summary(zz2)
+          f2 <-  summary(zz2)
           
           zz3 <- glm(y2~z-y,  data=d,   family = "binomial")      ## adjusting for prognostic X, y2 is not included by use of the '-'
-          f <-  summary(zz3)
+          f3 <-  summary(zz3)
         
             
             cbind(
@@ -1036,6 +1036,8 @@ server <- shinyServer(function(input, output   ) {
         sample <- random.sample()
         theta1=sample$theta     
         
+      #  theta1=exp(theta1)  
+        
         d1 <-  density(res[,1] )
         d2 <-  density(res[,3] )
         d3 <-  density(res[,5] )
@@ -1055,7 +1057,7 @@ server <- shinyServer(function(input, output   ) {
         if (input$dist %in% "All") {
             
             plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
-                 xlab="Treatment effect",  
+                 xlab="Treatment effect log odds",  
                  ylab="Density")                           
             lines( (d2), col = "black", lty=w, lwd=ww)  
             lines( (d3), col = "red", lty=wz, lwd=ww)    
@@ -1268,7 +1270,7 @@ server <- shinyServer(function(input, output   ) {
         if (input$dist %in% "All") {
             
             plot( (d1), xlim = c(dx), main=paste0("Density of treatment standard error estimates, truth= ",p4(se.),""), ylim=c(0,dz),lty=wz, lwd=ww,
-                  xlab="Standard error",  
+                  xlab="Standard error of logg odds trt effect",  
                   ylab="Density")  
             lines( (d2), col = "black", lty=w, lwd=ww)  
             lines( (d3), col = "red", lty=wz, lwd=ww)    
