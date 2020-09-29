@@ -106,6 +106,7 @@
 
   RR=.37 ## used to limit correlations between variables
 
+  sd1= 3  # for X covariates sd
   
 
 
@@ -356,6 +357,22 @@ compared to other prognostic factors [7,8].
                                             
                                   )     ,
                                   
+                                  
+                                  tabPanel( "99 Load",
+                                      
+                                            fileInput("file", label = ""),
+                                            actionButton(inputId="plot","Plot"),
+                                            plotOutput("hist")   
+                                           
+                                            
+                                  ) ,
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
+                                  
                                   tabPanel("6 Notes & references", value=3, 
                                            
                                            h4("First, a power calculation function in R for a ttest, using the random error, treatment effect, alpha and power is used to determine the sample size.") ,
@@ -518,7 +535,7 @@ server <- shinyServer(function(input, output   ) {
         N1=MM/2
         N2=N1
         
-        
+        # not used, as I want se for beta
         se. <- sqrt(  p1*(1-p1) /(N1) +    post.prob*(1- post.prob)/(N2) ) 
         
         
@@ -571,7 +588,8 @@ server <- shinyServer(function(input, output   ) {
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
         # making up some beta coefficients, fixed for all simulations as it is outside loop
-        b1 <- round(sort(runif(K1, -theta1*Fact,theta1*Fact)), digits=2) 
+        tx <- abs(-theta1)
+        b1 <- round(sort(runif(K1, -tx*Fact, tx*Fact)), digits=2) 
         
         
         simfun <- function(N=N1, K=K1, a=log(p1), sigma=sigma1, theta=(theta1), b=b1) {
@@ -581,7 +599,7 @@ server <- shinyServer(function(input, output   ) {
             if (covar==1) {  
                 X <- array(runif(N*K , -1,1), c(N,K))     # initially covars were uniform dist
             } else {
-                X <- array(rnorm(N*K, 0, 1), c(N,K))  
+                X <- array(rnorm(N*K, 0, sd1), c(N,K))  #1
             }
             
             z <- sample(c(0,1), N, replace=T)                           # treatment indicators
@@ -793,7 +811,7 @@ server <- shinyServer(function(input, output   ) {
             nvars = dim(L)[1]
             
             # Random variables that follow an M correlation matrix
-            r = t(L) %*% matrix(rnorm(nvars*N, 0,1), nrow=nvars, ncol=N)  #2,2
+            r = t(L) %*% matrix(rnorm(nvars*N, 0,sd1), nrow=nvars, ncol=N)  #2,2
             r = t(r)
             
             r <- as.matrix(r)#
@@ -1078,7 +1096,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
-                 xlab="Treatment effect",  
+                 xlab="Treatment effect log odds",  
                  ylab="Density")  
             lines( (d2), col = "black", lty=w, lwd=ww)  
             
@@ -1088,7 +1106,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             plot((d3), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,col="red",
-                 xlab="Treatment effect",  
+                 xlab="Treatment effect log odds",  
                  ylab="Density")               
             lines( (d4), col = "red", lty=w, lwd=ww)          
             
@@ -1097,7 +1115,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d5") {
             
             plot((d5), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="blue",
-                 xlab="Treatment effect",  
+                 xlab="Treatment effect log odds",  
                  ylab="Density")                    
             
             lines( (d6), col = "blue", lty=w, lwd=ww)       
@@ -1107,7 +1125,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d7") {
             
             plot((d7), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="purple",
-                 xlab="Treatment effect", 
+                 xlab="Treatment effect log odds",  
                  ylab="Density") 
             
             lines( (d8), col = "purple", lty=w, lwd=ww)     
@@ -1116,7 +1134,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d9") {
             
             plot((d9), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="green",
-                 xlab="Treatment effect", 
+                 xlab="Treatment effect log odds",  
                  ylab="Density")  
             
             lines( (d10), col = "green", lty=w, lwd=ww)     
@@ -1126,7 +1144,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d11") {
             
             plot((d11), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="grey",
-                 xlab="Treatment effect",  
+                 xlab="Treatment effect log odds",  
                  ylab="Density")  
             
             lines( (d12), col = "grey", lty=w, lwd=ww)     
@@ -1155,73 +1173,112 @@ server <- shinyServer(function(input, output   ) {
                , bty = "n", cex=1)
     })
     
-    
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+ #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
     
     # Need to be able to calculate logistic regression se analytically base on p1 and OR?
     # so for now we do simulation, not ideal
     
+    # simulx <- reactive({
+    #   
+    #   sample <- random.sample()
+    #   # need to rename to avoid recursive issues
+    #   K1=sample$K
+    #   Kp=sample$Kp
+    #   pow=sample$pow
+    # #  sigma1=sample$sigma
+    #   theta1=sample$theta        
+    #   alpha=sample$alpha  
+    #   covar=sample$covar
+    #   Fact=sample$Fact
+    #   p1=sample$p1
+    #   simuls=sample$simuls
+    # 
+    #   N<- mcmc()$N
+    # 
+    #   ## function to simulate simple dataset #####################################################################
+    #   
+    #   fun.d<-function(nsample, drug.allocation, 
+    #                   alpha,  beta.drug,
+    #                   seed=NULL){ 
+    #     
+    #     if (!is.null(seed)) set.seed(seed)
+    #     
+    #     drug<- (rbinom(nsample, 1, prob =drug.allocation ))   
+    #     
+    #     Xmat <- model.matrix(~ drug )
+    #     beta.vec <- c(alpha,  beta.drug )
+    #     
+    #     lin.pred <- Xmat[,] %*% beta.vec                 # Value of lin.predictor
+    #     exp.p <- exp(lin.pred) / (1 + exp(lin.pred))     # Expected proportion
+    #     y <- rbinom(n = nsample, size = 1, prob = exp.p) # Add binomial noise
+    #     #y<- runif(nsample) <  exp.p                     # alternatively ads noise in this way
+    #     
+    #     d<-as.data.frame(cbind(y, drug))         # create a dataset
+    #     
+    #     return(d)
+    #     
+    #   }
+    #   
+    #  # function to pull out se######################################################################################
+    #   simfunc <- function(d) {
+    #     fit1 <- glm(y  ~ drug , d, family = binomial) 
+    #     c( summary(fit1)$coef["drug","Std. Error"] )   # collect se
+    #   }
+    #   
+    #  ################################################################################################################
+    #  out <- replicate(1000, simfunc(fun.d( nsample=N, drug.allocation=0.5,    
+    #                                       alpha=log(p1/(1-p1)),  # turn prob into odds and enter this here
+    #                                       beta.drug=(theta1))))
+    # 
+    # ################################################################################################################
+    #  se. <- mean(out)
+    # 
+    #    
+    # return(list(   
+    #   
+    #   se.=se. 
+    # ))
+      
+      # not relying on simulation
+      # logistic regression se by hand  for drug effect based on p1 and OR from which N is calculated
+      
     simulx <- reactive({
+        
+        sample <- random.sample()
+  
+        pow=sample$pow
+        theta1=sample$theta        
+        alpha=sample$alpha  
+        p1=sample$p1
+
+        N<- mcmc()$N
       
-      sample <- random.sample()
-      # need to rename to avoid recursive issues
-      K1=sample$K
-      Kp=sample$Kp
-      pow=sample$pow
-    #  sigma1=sample$sigma
-      theta1=sample$theta        
-      alpha=sample$alpha  
-      covar=sample$covar
-      Fact=sample$Fact
-      p1=sample$p1
-      simuls=sample$simuls
-    
-      N<- mcmc()$N
-    
-      ## function to simulate simple dataset #####################################################################
+        (post.odds <- p1/(1-p1) *  (theta))
+        (p2 <-post.prob <- post.odds/(post.odds+1))
+        
+        cellA <- (1-p1)*N/2
+        cellC	<- p1*N/2
+        cellB	<- (1-p2)*N/2
+        cellD	<- p2*N/2
+        
+        se. <- log.odds.se. <- sqrt((1/cellA)+(1/cellB)+(1/cellC)+(1/cellD))
       
-      fun.d<-function(nsample, drug.allocation, 
-                      alpha,  beta.drug,
-                      seed=NULL){ 
-        
-        if (!is.null(seed)) set.seed(seed)
-        
-        drug<- (rbinom(nsample, 1, prob =drug.allocation ))   
-        
-        Xmat <- model.matrix(~ drug )
-        beta.vec <- c(alpha,  beta.drug )
-        
-        lin.pred <- Xmat[,] %*% beta.vec                 # Value of lin.predictor
-        exp.p <- exp(lin.pred) / (1 + exp(lin.pred))     # Expected proportion
-        y <- rbinom(n = nsample, size = 1, prob = exp.p) # Add binomial noise
-        #y<- runif(nsample) <  exp.p                     # alternatively ads noise in this way
-        
-        d<-as.data.frame(cbind(y, drug))         # create a dataset
-        
-        return(d)
-        
-      }
+        return(list(   
+          
+          se.=se. 
+        ))
       
-     # function to pull out se######################################################################################
-      simfunc <- function(d) {
-        fit1 <- glm(y  ~ drug , d, family = binomial) 
-        c( summary(fit1)$coef["drug","Std. Error"] )
-      }
       
-     ################################################################################################################
-     out <- replicate(1000, simfunc(fun.d( nsample=N, drug.allocation=0.5,    
-                                          alpha=log(p1),  
-                                          beta.drug=(theta1))))
-    
-    ################################################################################################################
-     se. <- mean(out)
-    
-    return(list(   
       
-      se.=se.
-      
-    ))
     
     })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
     
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -1238,7 +1295,7 @@ server <- shinyServer(function(input, output   ) {
         res3 <- simul3()$res
         
         sample <- random.sample()
-      #  sigma1=sample$sigma
+       
         N1 <- mcmc()$N # 
         
         n1 <- mcmc()$Na
@@ -1263,14 +1320,14 @@ server <- shinyServer(function(input, output   ) {
         
         #se. <- mcmc()$se.
         se. <- simulx()$se.
-        
+        se2 <- simulx()$se2
         dz <- max(c(d1$y, d2$y, d3$y, d4$y, d5$y, d6$y, d7$y, d8$y  , d9$y, d10$y, d11$y, d12$y    ))
         dx <- range(c(d1$x,d2$x,  d3$x, d4$x, d5$x, d6$x, d7$x, d8$x   , d9$x, d10$x, d11$x, d12$x    ))
         
         if (input$dist %in% "All") {
             
             plot( (d1), xlim = c(dx), main=paste0("Density of treatment standard error estimates, truth= ",p4(se.),""), ylim=c(0,dz),lty=wz, lwd=ww,
-                  xlab="Standard error of logg odds trt effect",  
+                  xlab="Standard error of log odds trt effect",  
                   ylab="Density")  
             lines( (d2), col = "black", lty=w, lwd=ww)  
             lines( (d3), col = "red", lty=wz, lwd=ww)    
@@ -1291,7 +1348,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d1") {  
             
             plot((d1), xlim = dx, main=paste0("Density of treatment standard error estimates, truth= ",p3(se.),""), ylim=c(0,dz),lty=wz, lwd=ww,
-                 xlab="Treatment effect",  
+                 xlab="Standard error of log odds trt effect",  
                  ylab="Density") 
             lines( (d2), col = "black", lty=w, lwd=ww)  
             
@@ -1301,7 +1358,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             plot((d3), xlim = dx, main=paste0("Density of treatment standard error estimates, truth= ",p3(se.),""), ylim=c(0,dz),lty=wz, lwd=ww,col="red",
-                 xlab="Treatment effect", 
+                 xlab="Standard error of log odds trt effect",  
                  ylab="Density")  
             lines( (d4), col = "red", lty=w, lwd=ww)          
             
@@ -1310,7 +1367,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d5") {
             
             plot((d5), xlim = dx, main=paste0("Density of treatment standard error estimates, truth= ",p3(se.),""), ylim=c(0,dz),lty=wz, lwd=ww, col="blue",
-                 xlab="Treatment effect",  
+                 xlab="Standard error of log odds trt effect",  
                  ylab="Density")  
             
             lines( (d6), col = "blue", lty=w, lwd=ww)       
@@ -1320,7 +1377,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d7") {
             
             plot((d7), xlim = dx, main=paste0("Density of treatment standard error estimates, truth= ",p3(se.),""), ylim=c(0,dz),lty=wz, lwd=ww, col="purple",
-                 xlab="Treatment effect",  
+                 xlab="Standard error of log odds trt effect",  
                  ylab="Density") 
             
             lines( (d8), col = "purple", lty=w, lwd=ww)     
@@ -1330,7 +1387,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d9") {
             
             plot((d9), xlim = dx, main=paste0("Density of treatment standard error estimates, truth= ",p3(se.),""), ylim=c(0,dz),lty=wz, lwd=ww, col="green",
-                 xlab="Treatment effect",  
+                 xlab="Standard error of log odds trt effect",  
                  ylab="Density")  
             
             lines( (d10), col = "green", lty=w, lwd=ww)     
@@ -1340,7 +1397,7 @@ server <- shinyServer(function(input, output   ) {
         else if (input$dist %in% "d11") {
             
             plot((d11), xlim = dx, main=paste0("Density of treatment standard error estimates, truth= ",p3(se.),""), ylim=c(0,dz),lty=wz, lwd=ww, col="grey",
-                 xlab="Treatment effect",  
+                 xlab="Standard error of log odds trt effect",  
                  ylab="Density")  
             
             lines( (d12), col = "grey", lty=w, lwd=ww)     
@@ -1404,6 +1461,9 @@ server <- shinyServer(function(input, output   ) {
         
         q1.result3 <- simul3()$q1.result  
         q2.result3 <- simul3()$q2.result  
+        
+
+        
 
         zz <- rbind(
           (c( p4(result[1])   ,     p2(q1.result[1])  ,  p2(q2.result[1])   , p4(result[2] ) ,  p4(result[13] ) ,  p4(result[1] -theta1) ,      p4(result[37] )    ,  p4(result[43] )         )) ,
@@ -1506,6 +1566,174 @@ server <- shinyServer(function(input, output   ) {
       return(print(d^2)) 
       
     })
+    
+    
+    # saveing <- reactive({
+    #   
+    #   res <- simul()$res
+    #   res2 <- simul2()$res
+    #   res3 <- simul3()$res
+    #   
+    #   sample <- random.sample()
+    #   theta=sample$theta     
+    #   
+    #   return(   
+    #   save.image(file='simdata.RData')
+    #   )
+    # }) 
+    
+    
+   #save.image(file='simdata.RData')
+    
+    
+   # # load('simdata.RData')
+   #  observeEvent(input$plot,{
+   #    if ( is.null(input$file)) return(NULL)
+   #    inFile <- input$file
+   #    file <- inFile$datapath
+   #    # load the file into new environment and get it from there
+   #    e = new.env()
+   #    name <- load(file, envir = e)
+   #    simul <- e[[name]]
+   #
+   #    # Plot the data
+   #  #  output$hist <- renderPlot({
+   #
+   #      output$reg.plotx <- renderPlot({         #means
+   #
+   #        # Get the  data
+   #
+   #        res <- simul()$res
+   #        res2 <- simul2()$res
+   #        res3 <- simul3()$res
+   #
+   #        sample <- random.sample()
+   #        theta1=sample$theta
+   #
+   #        #  theta1=exp(theta1)
+   #
+   #        d1 <-  density(res[,1] )
+   #        d2 <-  density(res[,3] )
+   #        d3 <-  density(res[,5] )
+   #        d4 <-  density(res[,7] )
+   #        d5 <-  density(res[,9] )
+   #        d6 <-  density(res[,11] )
+   #        d7 <-  density(res2[,1] )
+   #        d8 <-  density(res2[,3] )
+   #        d9 <-   density(res3[,1] )
+   #        d10 <-  density(res3[,3] )
+   #        d11 <-  density(res3[,5] )
+   #        d12 <-  density(res3[,7] )
+   #
+   #        dz <- max(c(d1$y, d2$y, d3$y, d4$y, d5$y, d6$y, d7$y, d8$y  , d9$y, d10$y, d11$y, d12$y  ))
+   #        dx <- range(c(d1$x,d2$x,  d3$x, d4$x, d5$x, d6$x, d7$x, d8$x   , d9$x, d10$x, d11$x, d12$x  ))
+   #
+   #        if (input$dist %in% "All") {
+   #
+   #          plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
+   #               xlab="Treatment effect log odds",
+   #               ylab="Density")
+   #          lines( (d2), col = "black", lty=w, lwd=ww)
+   #          lines( (d3), col = "red", lty=wz, lwd=ww)
+   #          lines( (d4), col = "red", lty=w, lwd=ww)
+   #          lines( (d5), col = "blue", lty=wz, lwd=ww)
+   #          lines( (d6), col = "blue", lty=w, lwd=ww)
+   #          lines( (d7), col = "purple", lty=wz, lwd=ww)
+   #          lines( (d8), col = "purple", lty=w, lwd=ww)
+   #
+   #          lines( (d9), col = "green", lty=wz, lwd=ww)
+   #          lines( (d10), col = "green", lty=w, lwd=ww)
+   #          lines( (d11), col = "grey", lty=wz, lwd=ww)
+   #          lines( (d12), col = "grey", lty=w, lwd=ww)
+   #
+   #        }
+   #
+   #        else if (input$dist %in% "d1") {  #remove
+   #
+   #
+   #          plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
+   #               xlab="Treatment effect log odds",
+   #               ylab="Density")
+   #          lines( (d2), col = "black", lty=w, lwd=ww)
+   #
+   #        }
+   #
+   #        else if (input$dist %in% "d3") {  #remove
+   #
+   #
+   #          plot((d3), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,col="red",
+   #               xlab="Treatment effect log odds",
+   #               ylab="Density")
+   #          lines( (d4), col = "red", lty=w, lwd=ww)
+   #
+   #        }
+   #
+   #        else if (input$dist %in% "d5") {
+   #
+   #          plot((d5), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="blue",
+   #               xlab="Treatment effect log odds",
+   #               ylab="Density")
+   #
+   #          lines( (d6), col = "blue", lty=w, lwd=ww)
+   #
+   #        }
+   #
+   #        else if (input$dist %in% "d7") {
+   #
+   #          plot((d7), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="purple",
+   #               xlab="Treatment effect log odds",
+   #               ylab="Density")
+   #
+   #          lines( (d8), col = "purple", lty=w, lwd=ww)
+   #
+   #        }
+   #        else if (input$dist %in% "d9") {
+   #
+   #          plot((d9), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="green",
+   #               xlab="Treatment effect log odds",
+   #               ylab="Density")
+   #
+   #          lines( (d10), col = "green", lty=w, lwd=ww)
+   #
+   #        }
+   #
+   #        else if (input$dist %in% "d11") {
+   #
+   #          plot((d11), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="grey",
+   #               xlab="Treatment effect log odds",
+   #               ylab="Density")
+   #
+   #          lines( (d12), col = "grey", lty=w, lwd=ww)
+   #
+   #        }
+   #
+   #
+   #        abline(v = theta1, col = "darkgrey")
+   #        legend("topright",       # Add legend to density
+   #               legend = c(" adj. for true prognostic covariates",
+   #                          " not adj. for true prognostic covariates" ,
+   #                          " adj. for covariates unrelated to outcome",
+   #                          " not adj. for covariates unrelated to outcome",
+   #                          " adj. for mix of prognostic and unrelated to outcome",
+   #                          " not adj. mix of prognostic and unrelated to outcome",
+   #                          " adj. for correlated prognostic covariates",
+   #                          " not adj. for correlated prognostic covariates",
+   #                          " adj. for imbalanced prognostic covariates",
+   #                          " not adj. for imbalanced prognostic covariates",
+   #                          " adj. for imbalanced covariates unrelated to outcome",
+   #                          " not adj. imbalanced covariates unrelated to outcome"
+   #
+   #               ),
+   #               col = c("black", "black","red","red","blue", "blue", "purple", "purple", "green", "green", "grey", "grey"),
+   #               lty = c(wz, w,wz,w,wz,w,wz,w,wz,w,wz,w)  ,lwd=ww
+   #               , bty = "n", cex=1)
+   #      })
+
+     # })
+
+   # })
+
+    
  
 }) 
 
