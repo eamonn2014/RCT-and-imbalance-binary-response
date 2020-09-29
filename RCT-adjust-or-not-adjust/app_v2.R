@@ -363,13 +363,13 @@ compared to other prognostic factors [7,8].
                                             fluidRow(
                                               column(width = 6, offset = 0, style='padding:1px;',
                                                      
-                                                     div(plotOutput("reg.plotxx",  width=fig.width8, height=fig.height7)),
-                                                     div(plotOutput("reg.plotyy",  width=fig.width8, height=fig.height7)),
+                                                     div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
+                                                    # div(plotOutput("reg.plotyy",  width=fig.width8, height=fig.height7)),
                                               ) 
                                             ),
                                             div( verbatimTextOutput("user2") ),
-                                            div( verbatimTextOutput("user3") )                                           #div( verbatimTextOutput("zz") )  ,
-                                           
+                                            div( verbatimTextOutput("user3") )             
+                                            
                                   ) ,
                                   
                                   tabPanel("6 Notes & references", value=3, 
@@ -1226,7 +1226,8 @@ server <- shinyServer(function(input, output   ) {
         n1 <- mcmc()$Na
         n2 <- mcmc()$Nb
         se. <- simulx()$se.
-       # save(list = c("wz","w","ww","se.","N1","n1","n2","res", "res2","res3"), file = "se1.Rdata")  
+        theta=sample$theta    
+       save(list = c("wz","w","ww","se.","N1","n1","n2","res", "res2","res3","theta"), file = "se1.Rdata")  
         
         
         d1 <-  density(res[,2] )
@@ -1487,42 +1488,181 @@ server <- shinyServer(function(input, output   ) {
       
     })
     
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # here we deal with the loaded files 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
     # save.image(file='test.RData')
+    #save(list = c("wz","w","ww","se.","N1","n1","n2","res", "res2","res3", "theta"), file = "se1.Rdata")  
     
-   # ave(list = c("wz","w","ww","se.","N1","n1","n2","res", "res2","res3"), file = "se1.Rdata")  
     user <-  reactive({
       
       req(input$file1)
       
-      res<- as.data.frame(res)
-      res2<- as.data.frame(res2)
+      res <- as.data.frame(res)
+      res2 <- as.data.frame(res2)
+      res3 <- as.data.frame(res3)
+      wz=wz
+      w=w 
+      ww=ww
+      se.=se.
+      N1=N1
+      n1=n1
+      n2=n2
       
       return(list(  
-        
-        res=res, res2=res2
-        
-        
-        
-      )) 
+         res=res, res2=res2, res3=res3, w=w,ww=ww,wz=wz,se.=se.,N1=N1,n1=n1,n2=n2
+     )) 
       
     })
-    
-    output$user2 <- renderPrint({
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+     output$user2 <- renderPrint({
       
       d <- user()$res
       return(print(d))
       
     })
     
-    
-    output$user3 <- renderPrint({
+     output$user3 <- renderPrint({
       
       d <- user()$res2
       return(print(d))
       
     })
     
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+     # simulation plots
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     # collect simulation trt effect estimates from simulation and plot!
+     
+     output$reg.plotL   <- renderPlot({         #means
+       
+       # Get the  data
+       res <- user()$res
+       res2 <- user()$res
+       res3 <- user()$res
+       theta1=user()$theta   
+       
+       
+       sample <- random.sample()
+       
+       d1 <-  density(res[,1] )
+       d2 <-  density(res[,3] )
+       d3 <-  density(res[,5] )
+       d4 <-  density(res[,7] )
+       d5 <-  density(res[,9] )
+       d6 <-  density(res[,11] )
+       d7 <-  density(res2[,1] )
+       d8 <-  density(res2[,3] )
+       d9 <-   density(res3[,1] )
+       d10 <-  density(res3[,3] )
+       d11 <-  density(res3[,5] )
+       d12 <-  density(res3[,7] )
+       
+       dz <- max(c(d1$y, d2$y, d3$y, d4$y, d5$y, d6$y, d7$y, d8$y  , d9$y, d10$y, d11$y, d12$y  ))
+       dx <- range(c(d1$x,d2$x,  d3$x, d4$x, d5$x, d6$x, d7$x, d8$x   , d9$x, d10$x, d11$x, d12$x  ))
+       
+       if (input$dist %in% "All") {
+         
+         plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
+              xlab="Treatment effect log odds",  
+              ylab="Density")                           
+         lines( (d2), col = "black", lty=w, lwd=ww)  
+         lines( (d3), col = "red", lty=wz, lwd=ww)    
+         lines( (d4), col = "red", lty=w, lwd=ww)          
+         lines( (d5), col = "blue", lty=wz, lwd=ww)       
+         lines( (d6), col = "blue", lty=w, lwd=ww)       
+         lines( (d7), col = "purple", lty=wz, lwd=ww)       
+         lines( (d8), col = "purple", lty=w, lwd=ww)       
+         
+         lines( (d9), col = "green", lty=wz, lwd=ww)       
+         lines( (d10), col = "green", lty=w, lwd=ww)       
+         lines( (d11), col = "grey", lty=wz, lwd=ww)       
+         lines( (d12), col = "grey", lty=w, lwd=ww)  
+         
+       }
+       
+       else if (input$dist %in% "d1") {  #remove
+         
+         
+         plot((d1), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,
+              xlab="Treatment effect log odds",  
+              ylab="Density")  
+         lines( (d2), col = "black", lty=w, lwd=ww)  
+         
+       }
+       
+       else if (input$dist %in% "d3") {  #remove
+         
+         
+         plot((d3), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww,col="red",
+              xlab="Treatment effect log odds",  
+              ylab="Density")               
+         lines( (d4), col = "red", lty=w, lwd=ww)          
+         
+       }
+       
+       else if (input$dist %in% "d5") {
+         
+         plot((d5), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="blue",
+              xlab="Treatment effect log odds",  
+              ylab="Density")                    
+         
+         lines( (d6), col = "blue", lty=w, lwd=ww)       
+         
+       }
+       
+       else if (input$dist %in% "d7") {
+         
+         plot((d7), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="purple",
+              xlab="Treatment effect log odds",  
+              ylab="Density") 
+         
+         lines( (d8), col = "purple", lty=w, lwd=ww)     
+         
+       }
+       else if (input$dist %in% "d9") {
+         
+         plot((d9), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="green",
+              xlab="Treatment effect log odds",  
+              ylab="Density")  
+         
+         lines( (d10), col = "green", lty=w, lwd=ww)     
+         
+       }
+       
+       else if (input$dist %in% "d11") {
+         
+         plot((d11), xlim = dx, main=paste0("Density of treatment estimates, truth= ",p3(theta1),""), ylim=c(0,dz),lty=wz, lwd=ww, col="grey",
+              xlab="Treatment effect log odds",  
+              ylab="Density")  
+         
+         lines( (d12), col = "grey", lty=w, lwd=ww)     
+         
+       }
+       
+       abline(v = theta1, col = "darkgrey")                
+       legend("topright",       # Add legend to density
+              legend = c(" adj. for true prognostic covariates", 
+                         " not adj. for true prognostic covariates" ,
+                         " adj. for covariates unrelated to outcome", 
+                         " not adj. for covariates unrelated to outcome",
+                         " adj. for mix of prognostic and unrelated to outcome", 
+                         " not adj. mix of prognostic and unrelated to outcome", 
+                         " adj. for correlated prognostic covariates", 
+                         " not adj. for correlated prognostic covariates",
+                         " adj. for imbalanced prognostic covariates", 
+                         " not adj. for imbalanced prognostic covariates", 
+                         " adj. for imbalanced covariates unrelated to outcome", 
+                         " not adj. imbalanced covariates unrelated to outcome"
+                         
+              ),
+              col = c("black", "black","red","red","blue", "blue", "purple", "purple", "green", "green", "grey", "grey"),
+              lty = c(wz, w,wz,w,wz,w,wz,w,wz,w,wz,w)  ,lwd=ww
+              , bty = "n", cex=1)
+     })
+     
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     
 })
