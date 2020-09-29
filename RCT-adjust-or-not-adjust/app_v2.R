@@ -367,8 +367,8 @@ compared to other prognostic factors [7,8].
                                                      div(plotOutput("reg.plotyy",  width=fig.width8, height=fig.height7)),
                                               ) 
                                             ),
-                                            div( verbatimTextOutput("user2") )
-                                           #div( verbatimTextOutput("zz") )  ,
+                                            div( verbatimTextOutput("user2") ),
+                                            div( verbatimTextOutput("user3") )                                           #div( verbatimTextOutput("zz") )  ,
                                            
                                   ) ,
                                   
@@ -1495,10 +1495,13 @@ server <- shinyServer(function(input, output   ) {
       req(input$file1)
       
       res<- as.data.frame(res)
+      res2<- as.data.frame(res2)
       
       return(list(  
         
-        res=res
+        res=res, res2=res2
+        
+        
         
       )) 
       
@@ -1512,6 +1515,12 @@ server <- shinyServer(function(input, output   ) {
     })
     
     
+    output$user3 <- renderPrint({
+      
+      d <- user()$res2
+      return(print(d))
+      
+    })
     
     
     
