@@ -1226,7 +1226,8 @@ server <- shinyServer(function(input, output   ) {
         n1 <- mcmc()$Na
         n2 <- mcmc()$Nb
         se. <- simulx()$se.
-        theta=sample$theta    
+        theta<-sample$theta      
+        
        save(list = c("wz","w","ww","se.","N1","n1","n2","res", "res2","res3","theta"), file = "se1.Rdata")  
         
         
@@ -1508,9 +1509,10 @@ server <- shinyServer(function(input, output   ) {
       N1=N1
       n1=n1
       n2=n2
+      theta=theta
       
       return(list(  
-         res=res, res2=res2, res3=res3, w=w,ww=ww,wz=wz,se.=se.,N1=N1,n1=n1,n2=n2
+         res=res, res2=res2, res3=res3, w=w,ww=ww,wz=wz,se.=se.,N1=N1,n1=n1,n2=n2, theta=theta
      )) 
       
     })
@@ -1539,9 +1541,9 @@ server <- shinyServer(function(input, output   ) {
        
        # Get the  data
        res <- user()$res
-       res2 <- user()$res
-       res3 <- user()$res
-       theta1=user()$theta   
+       res2 <- user()$res2
+       res3 <- user()$res3
+       theta1<-user()$theta   
        
        
        sample <- random.sample()
