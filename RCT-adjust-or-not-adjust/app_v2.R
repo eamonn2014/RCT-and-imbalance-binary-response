@@ -112,7 +112,7 @@ sd1= 3  # for X covariates sd
 # jscode <- "shinyjs.refresh = function() { history.go(0); }"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2 , paper another option to try
+ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2 , paper another option to try
                 # paper
                 useShinyalert(),  # Set up shinyalert
                 setBackgroundColor(
@@ -360,7 +360,7 @@ compared to other prognostic factors [7,8].
                                         
                                         
                                         
-                                        fileInput("file1", "upload",
+                                        fileInput("file1", "UPload a pre-run simulation",
                                                   multiple = FALSE,
                                                   accept = c(".Rdata" )),
                                         
@@ -369,7 +369,7 @@ compared to other prognostic factors [7,8].
                                           column(width = 6, offset = 0, style='padding:1px;',
                                                  
                                                  div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
-                                               #  div(plotOutput("reg.ploty",  width=fig.width8, height=fig.height7)),
+                                                 div(plotOutput("reg.plotM",  width=fig.width8, height=fig.height7)),
                                           ) ,
                                           
                                           
@@ -452,6 +452,8 @@ compared to other prognostic factors [7,8].
                 ) 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end tab panels 
 )
+  
+ 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1513,7 +1515,7 @@ server <- shinyServer(function(input, output   ) {
   
   
   output$resA <- renderPrint({
-    
+     
     d<- NULL
     req(input$file1)
     d<- res
@@ -1523,20 +1525,22 @@ server <- shinyServer(function(input, output   ) {
   
   
   resZ <- reactive({
-    
+     
     d<- NULL
     req(input$file1)
     res <- res
     res2 <- res2
     res3 <- res3
     theta1<-theta  
+    se.<-se.
     
     return(list(  
       
       res = res ,
       res2 = res2,
       res3 = res3, 
-      theta1 =theta  
+      theta1 =theta  ,
+      se.=se.
     ))
   })
   
@@ -1682,13 +1686,15 @@ server <- shinyServer(function(input, output   ) {
   output$reg.plotM <- renderPlot({         #standard errors
     
     # Get the  data
+    res<- res2<-res3<- se. <- NULL
+    # req(input$file1)
     
-    # Get the  data
-    res <- user()$res
-    res2 <- user()$res2
-    res3 <- user()$res3
-    se. <- user()$se.
+    resZ <- resZ()
     
+    res <- resZ$res
+    res2 <- resZ$res2
+    res3 <- resZ$res3
+    se.<-resZ$se.  
     
     sample <- random.sample()
     
