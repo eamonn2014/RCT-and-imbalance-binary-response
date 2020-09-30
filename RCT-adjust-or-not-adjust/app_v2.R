@@ -49,6 +49,7 @@
   set.seed(333) # reproducible
   library(directlabels)
   library(shiny) 
+  library(shinyjs)  #refresh'
   library(shinyWidgets)
   library(shinythemes)  # more funky looking apps
   #library(DT)
@@ -108,7 +109,7 @@
   sd1= 3  # for X covariates sd
   
 
-
+ # jscode <- "shinyjs.refresh = function() { history.go(0); }"
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2 , paper another option to try
@@ -119,6 +120,8 @@
                       gradient = "linear",
                       direction = "bottom"
                   ),
+                  
+                  
                   
             h2("Covariate adjustment in randomised controlled trials (RCTs) with a binary response"), 
                 
@@ -354,16 +357,22 @@ compared to other prognostic factors [7,8].
                                   
                                   
                                   tabPanel( "99 Load",
-                                      
-                                          
+                                       
+                                            
+                                           #  uiOutput('file1_ui') ,## instead of fileInput('file1', label = NULL)
+                                           # fluidRow(
+                                           #  column(4,
+                                           #         actionButton('reset', 'Reset Input')
+                                           #  )),
+                                            # 
                                             fileInput("file1", "ssss",
-                                                      multiple = TRUE,
+                                                      multiple = FALSE,
                                                       accept = c("Rdata" )),
                                             
                                             fluidRow(
                                               column(width = 6, offset = 0, style='padding:1px;',
                                                      
-                                                     div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
+                                                    div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
                                                     div(plotOutput("reg.plotM",  width=fig.width8, height=fig.height7)),
                                               ) 
                                             ),
@@ -448,6 +457,11 @@ server <- shinyServer(function(input, output   ) {
     shinyalert("Welcome! \nAdjusting for covariates in binary response RCT!",
                "Best to do it!", 
                type = "info")
+  
+  
+  # observeEvent(input$refresh, {
+  #   js$refresh();
+  # })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # This is where a new sample is instigated and inputs converted to numeric
@@ -1482,23 +1496,30 @@ server <- shinyServer(function(input, output   ) {
   
  
     
-    output$mse.target <- renderPrint({
-      
-      d <- mcmc()$sigma
-      
-      return(print(d^2)) 
-      
-    })
-    
+    # output$mse.target <- renderPrint({
+    #   
+    #   d <- mcmc()$sigma
+    #   
+    #   return(print(d^2)) 
+    #   
+    # })
+    # 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # here we deal with the loaded files 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
     # save.image(file='test.RData')
     #save(list = c("wz","w","ww","se.","N1","n1","n2","res", "res2","res3", "theta"), file = "se1.Rdata")  
     
-    user <-  reactive({
+    # output$file1_ui <- renderUI({
+    #   input$reset ## Create a dependency with the reset button
+    #   fileInput('file1', label = NULL)
+    # })
+    
+    user <-  eventReactive({
       
       req(input$file1)
+      
+      # eventReactive(input$reload, {
       
       res <- as.data.frame(res)
       res2 <- as.data.frame(res2)
@@ -1511,13 +1532,21 @@ server <- shinyServer(function(input, output   ) {
       N1=N1
       n1=n1
       n2=n2
-      theta=theta
+      theta=theta#
+      
+      # }, ignoreNULL = FALSE)
       
       return(list(  
          res=res, res2=res2, res3=res3, w=w,ww=ww,wz=wz,se.=se.,N1=N1,n1=n1,n2=n2, theta=theta,zz=zz
      )) 
       
     })
+    
+    
+    
+    
+    
+    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
      output$user2 <- renderPrint({
       
@@ -1532,6 +1561,13 @@ server <- shinyServer(function(input, output   ) {
       return(print(d))
       
     })
+     
+     output$user3a <- renderPrint({
+       
+       d <- user()$res3
+       return(print(d))
+       
+     })
      output$user4 <- renderPrint({
        
        d <- user()$zz
