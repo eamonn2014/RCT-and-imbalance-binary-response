@@ -365,7 +365,22 @@ compared to other prognostic factors [7,8].
                                                   accept = c(".Rdata" )),
                                         
                                      
+                                        fluidRow(
+                                          column(width = 6, offset = 0, style='padding:1px;',
+                                                 
+                                                 div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
+                                               #  div(plotOutput("reg.ploty",  width=fig.width8, height=fig.height7)),
+                                          ) ,
                                           
+                                          
+                                          fluidRow(
+                                            column(width = 6, offset = 0, style='padding:1px;',
+                                                   
+                                            ))),#
+                                        
+                                        
+                                        
+                                        #div( verbatimTextOutput("resA") ),
                                           div( verbatimTextOutput("zzz") )
                               ) ,
                               
@@ -1484,102 +1499,69 @@ server <- shinyServer(function(input, output   ) {
   
   
   
-  # output$mse.target <- renderPrint({
-  #   
-  #   d <- mcmc()$sigma
-  #   
-  #   return(print(d^2)) 
-  #   
-  # })
-  # 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # here we deal with the loaded files 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-  # save.image(file='test.RData')
-  #save(list = c("wz","w","ww","se.","N1","n1","n2","res", "res2","res3", "theta"), file = "se1.Rdata")  
+ 
+  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   
-  # output$file1_ui <- renderUI({
-  #   input$reset ## Create a dependency with the reset button
-  #   fileInput('file1', label = NULL)
-  # })
   
-  # user <-  eventReactive({
-  #   
-  #   req(input$file1)
-  #   
-  #   # eventReactive(input$reload, {
-  #   
-  #   res <- as.data.frame(res)
-  #   res2 <- as.data.frame(res2)
-  #   res3 <- as.data.frame(res3)
-  #   zz <- as.data.frame(zz)
-  #   wz=wz
-  #   w=w 
-  #   ww=ww
-  #   se.=se.
-  #   N1=N1
-  #   n1=n1
-  #   n2=n2
-  #   theta=theta#
-  #   
-  #   # }, ignoreNULL = FALSE)
-  #   
-  #   return(list(  
-  #     res=res, res2=res2, res3=res3, w=w,ww=ww,wz=wz,se.=se.,N1=N1,n1=n1,n2=n2, theta=theta,zz=zz
-  #   )) 
-  #   
-  # })
-  # 
+  output$zzz <- renderPrint({
+    
+    d<- NULL
+    req(input$file1)
+    d<- zz
+    return(d)
+  })
+  
+  
+  output$resA <- renderPrint({
+    
+    d<- NULL
+    req(input$file1)
+    d<- res
+    return(d)
+  })
   
   
   
-  
+  resZ <- reactive({
+    
+    d<- NULL
+    req(input$file1)
+    res <- res
+    res2 <- res2
+    res3 <- res3
+    theta1<-theta  
+    
+    return(list(  
+      
+      res = res ,
+      res2 = res2,
+      res3 = res3, 
+      theta1 =theta  
+    ))
+  })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-  output$user2 <- renderPrint({
-    
-    d <- user()$res
-    return(print(d))
-    
-  })
-  
-  output$user3 <- renderPrint({
-    
-    d <- user()$res2
-    return(print(d))
-    
-  })
-  
-  output$user3a <- renderPrint({
-    
-    d <- user()$res3
-    return(print(d))
-    
-  })
-  output$user4 <- renderPrint({
-    
-    d <- user()$zz
-    return(print(d))
-    
-  })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-  # simulation plots
+  #  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # collect simulation trt effect estimates from simulation and plot!
   
   output$reg.plotL   <- renderPlot({         #means
     
-    # Get the  data
-    res <- user()$res
-    res2 <- user()$res2
-    res3 <- user()$res3
-    theta1<-user()$theta   
+    # Get the data
     
+    res<- res2<-res3<- theta1 <- NULL
+   # req(input$file1)
     
+    resZ <- resZ()
+  
+    res <- resZ$res
+    res2 <- resZ$res2
+    res3 <- resZ$res3
+    theta1<-resZ$theta  
+
     sample <- random.sample()
     
-    d1 <-  density(res[,1] )
+    d1 <-  density(res[,1]) 
     d2 <-  density(res[,3] )
     d3 <-  density(res[,5] )
     d4 <-  density(res[,7] )
@@ -1835,14 +1817,7 @@ server <- shinyServer(function(input, output   ) {
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  output$zzz <- renderPrint({
-    
-    d<- NULL
-    req(input$file1)
-    d<- zz
-    return(d)
-  })
-  
+
 })
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
