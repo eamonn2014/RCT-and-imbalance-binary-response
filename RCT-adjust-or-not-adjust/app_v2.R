@@ -357,34 +357,28 @@ compared to other prognostic factors [7,8].
                               
                               tabPanel( "99 Load",
                                         
-                                        
-                                        
-                                       
-                                        
-                                     
-                                        fluidRow(
+                                  #  fluidRow(
                                           
                                          
                                           
-                                          column(width = 8, offset = 0, style='padding:1px;',
+                                         # column(width = 12, offset = 0, style='padding:1px;',
                                                  
                                                  fileInput(inputId="file1", "Upload a pre-run simulation",
                                                            multiple = FALSE,
                                                            accept = c(".Rdata" )),
                                                  
-                                               #  div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
-                                                # div(plotOutput("reg.plotM",  width=fig.width8, height=fig.height7)),
-                                          ) ,
+                                              div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
+                                              div(plotOutput("reg.plotM",  width=fig.width8, height=fig.height7)),
+                                   #       ) ,
                                           
                                           
-                                          fluidRow(
-                                            column(width = 6, offset = 0, style='padding:1px;',
-                                                   
-                                            ))),#
-                                        
-                                        
-                                        
-                                        #div( verbatimTextOutput("resA") ),
+                                          # fluidRow(
+                                          #   column(width = 6, offset = 0, style='padding:1px;',
+                                          #          
+                                          #   )
+                                        #  )
+                                       # ),#
+                                         
                                         tableOutput('contents3'),
                               ) ,
                               
@@ -1548,55 +1542,50 @@ server <- shinyServer(function(input, output   ) {
     get((isfar)[12])
   })
   
- 
- #  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#tryn
- #  data <- reactive({
- #    #req(input$file1)
- # 
- #    dataset  <- reactive__source_data$data
- #  })
- #  
- #  output$zzz <- renderPrint({
- #    
- #    # req(input$file1)
- #    # d<- zz
- #    d<- data()$zz
- #    return(d)
- #  })
- #  
- #  
- #  
- #  output$resA <- renderPrint({
- #     
- #   # req(input$file1)
- #    d<- data()$res
- #    return(d)
- #  })
- #  
- #  
- #  
- #  resZ <- reactive({
- #     
- # #   d<-file<- NULL
- #  # file <- input$file1
- #  #   req(file)
- #    res<- data()$res
- #    res2 <- data()$res2
- #    res3 <- data()$res3
- #    theta1<-data()$theta  
- #    se.<-data()$se.
- #    
- #    return(list(  
- #      
- #      res = res ,
- #      res2 = res2,
- #      res3 = res3, 
- #      theta1 =as.data.frame(theta1)  ,
- #      se.=se.
- #    ))
- #  })
- #  
- 
+  trt.effect1  <- reactive({
+    
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(NULL)
+    isfar <- (load(inFile$datapath))
+    get((isfar)[8])
+  })
+  
+  trt.effect2  <- reactive({
+    
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(NULL)
+    isfar <- (load(inFile$datapath))
+    get((isfar)[9])
+  })
+  trt.effect3  <- reactive({
+    
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(NULL)
+    isfar <- (load(inFile$datapath))
+    get((isfar)[10])
+  })
+  
+  trt.effect4  <- reactive({
+    
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(NULL)
+    isfar <- (load(inFile$datapath))
+    get((isfar)[11])
+  })
+  
+  trt.effect5  <- reactive({
+    
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(NULL)
+    isfar <- (load(inFile$datapath))
+    get((isfar)[4])
+  })
+  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   #  
@@ -1605,18 +1594,17 @@ server <- shinyServer(function(input, output   ) {
   
   output$reg.plotL   <- renderPlot({         #means
     
-    # Get the data
-  
-    # res<- data()$res
-    # res2 <- data()$res2
-    # res3 <- data()$res3
-    # theta1<-data()$theta  
-    # se.<-data()$se. 
-
-    sample <- random.sample()
+     
+    res <- trt.effect1()
     
-    # r <- resZ()
-    # res <- (r$res)
+    res2 <- trt.effect2()
+    
+    res3 <- trt.effect3()
+    
+    theta1 <- trt.effect4()
+    
+    sample <- random.sample()
+   
       
     d1 <-  density( res[,1]) 
     d2 <-  density(res[,3] )
@@ -1739,15 +1727,14 @@ server <- shinyServer(function(input, output   ) {
   output$reg.plotM <- renderPlot({         #standard errors
     
     # Get the  data
-    # res<- res2<-res3<- se. <- NULL
-    # # req(input$file1)
-    # 
-    # resZ <- resZ()
-    # 
-    # res <- resZ$res
-    # res2 <- resZ$res2
-    # res3 <- resZ$res3
-    # se.<-resZ$se.  
+    
+    res <- trt.effect1()
+    
+    res2 <- trt.effect2()
+    
+    res3 <- trt.effect3()
+    
+    se. <- trt.effect5()
     
     sample <- random.sample()
    
