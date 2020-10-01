@@ -1521,27 +1521,44 @@ server <- shinyServer(function(input, output   ) {
   })
   
   
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # text 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+  
   output$betas <- renderPrint({
     
     d <- simul2()$betas
     return(print(d))
     
   })
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # https://github.com/rstudio/shiny-examples/tree/master/066-upload-file
+  # v tough to get this working !!!
+  # this is calling in Rdata and loading particular data from the Rdata
+  # load("C:\\Users\\Lenovo\\Documents\\RCT-and-imbalance-binary-response\\RCT-adjust-or-not-adjust\\B 5000 default settings theta log0.5 -1.68 -1.39  0.71.Rdata")
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+  # tabplot  <- reactive({
+  # 
+  #   inFile <- input$file1
+  #   if (is.null(inFile))
+  #     return(NULL)
+  #   isfar <- (load(inFile$datapath))
+  #   get((isfar)[12])
+  # })
+  # 
+  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # output$contents3 <- DT::renderDataTable({
+  #   datatable( tabplot(), rownames = TRUE )
+  # })
   
-  
+  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$contents3 <- renderTable({
-    
+
     inFile <- input$file1
     if (is.null(inFile))
       return(NULL)
     isfar <- (load(inFile$datapath))
-    get((isfar)[12])
-  })
-  
+     (get((isfar)[12]))
+   }, rownames = TRUE)
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   trt.effect1  <- reactive({
     
     inFile <- input$file1
