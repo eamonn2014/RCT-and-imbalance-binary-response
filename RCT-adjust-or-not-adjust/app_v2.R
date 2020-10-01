@@ -121,8 +121,7 @@ ui <-  fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/
                   direction = "bottom"
                 ),
                 
-                
-                
+          
                 h2("Covariate adjustment in randomised controlled trials (RCTs) with a binary response"), 
                 
                 h4("The main value of randomization in RCTs is that it eliminates selection bias, treatment groups are on average comparable in terms of known
@@ -312,55 +311,55 @@ compared to other prognostic factors [7,8].
                                         width = 30 )     ,
                               
                               
-                              tabPanel( "2 Example A results, default setting",
-                                        
-                                        h4(paste("Figure 3 Treatment effect estimates, betas -0.01,  0.02,  0.13, default settings 100,000 simulations (radio buttons do not work here)")),
-                                        img(src='estimates100K.png', align = "right"),
-                                        h4(paste("Figure 4 Standard error estimates")),
-                                        img(src='se100K.png', align = "right"),
-                                        h4(paste("Table 3 Summary, sorted by smallest mean squared error (MSE) estimate")),
-                                        img(src='summary100K.png', align = "center"),
-                                        
-                              )     ,
-                              
-                              
-                              tabPanel( "3 Example B results",
-                                        
-                                        h4(paste("Figure 5 Treatment effect estimates, betas -.99,  -0.4,  0.99 (no larger than 2 x trt effect); trt effect 1; residual variation 3; 50,000 simulations (radio buttons do not work here)")),
-                                        img(src='trtesr2.png', align = "right"),
-                                        h4(paste("Figure 6 Standard error estimates")),
-                                        img(src='se.estimates2.png', align = "right"),
-                                        h4(paste("Table 4 Summary, sorted by smallest mean squared error (MSE) estimate")),
-                                        img(src='summary of results2.png', align = "center"),
-                              )     ,
-                              
-                              
-                              tabPanel( "4 Example C results",
-                                        
-                                        h4(paste("Figure 7 Treatment effect estimates, betas -.58,  0,  0.5 (no larger than 0.75 x trt effect); trt effect 1; residual variation 2; 50,000 simulations (radio buttons do not work here)")),
-                                        img(src='trtesr3.png', align = "right"),
-                                        h4(paste("Figure 8 Standard error estimates")),
-                                        img(src='se.estimates3.png', align = "right"),
-                                        h4(paste("Table 5 Summary, sorted by smallest mean squared error (MSE) estimate")),
-                                        img(src='summary of results3.png', align = "center"),
-                              )     ,
-                              
-                              tabPanel( "5 Example D results",
-                                        
-                                        h4(paste("Figure 8 Treatment effect estimates, betas  -0.87,  0.62,  0.82 (no larger than 4 x trt effect); trt effect .223; residual variation 0.2; 10,000 simulations (radio buttons do not work here)")),
-                                        img(src='estimate4.png', align = "right"),
-                                        h4(paste("Figure 8 Standard error estimates")),
-                                        img(src='se4.png', align = "right"),
-                                        h4(paste("Table 6 Summary, sorted by smallest mean squared error (MSE) estimate")),
-                                        img(src='summary4.png', align = "center"),
-                              )     ,
-                              
+                              # tabPanel( "2 Example A results, default setting",
+                              #           
+                              #           h4(paste("Figure 3 Treatment effect estimates, betas -0.01,  0.02,  0.13, default settings 100,000 simulations (radio buttons do not work here)")),
+                              #           img(src='estimates100K.png', align = "right"),
+                              #           h4(paste("Figure 4 Standard error estimates")),
+                              #           img(src='se100K.png', align = "right"),
+                              #           h4(paste("Table 3 Summary, sorted by smallest mean squared error (MSE) estimate")),
+                              #           img(src='summary100K.png', align = "center"),
+                              #           
+                              # )     ,
+                              # 
+                              # 
+                              # tabPanel( "3 Example B results",
+                              #           
+                              #           h4(paste("Figure 5 Treatment effect estimates, betas -.99,  -0.4,  0.99 (no larger than 2 x trt effect); trt effect 1; residual variation 3; 50,000 simulations (radio buttons do not work here)")),
+                              #           img(src='trtesr2.png', align = "right"),
+                              #           h4(paste("Figure 6 Standard error estimates")),
+                              #           img(src='se.estimates2.png', align = "right"),
+                              #           h4(paste("Table 4 Summary, sorted by smallest mean squared error (MSE) estimate")),
+                              #           img(src='summary of results2.png', align = "center"),
+                              # )     ,
+                              # 
+                              # 
+                              # tabPanel( "4 Example C results",
+                              #           
+                              #           h4(paste("Figure 7 Treatment effect estimates, betas -.58,  0,  0.5 (no larger than 0.75 x trt effect); trt effect 1; residual variation 2; 50,000 simulations (radio buttons do not work here)")),
+                              #           img(src='trtesr3.png', align = "right"),
+                              #           h4(paste("Figure 8 Standard error estimates")),
+                              #           img(src='se.estimates3.png', align = "right"),
+                              #           h4(paste("Table 5 Summary, sorted by smallest mean squared error (MSE) estimate")),
+                              #           img(src='summary of results3.png', align = "center"),
+                              # )     ,
+                              # 
+                              # tabPanel( "5 Example D results",
+                              #           
+                              #           h4(paste("Figure 8 Treatment effect estimates, betas  -0.87,  0.62,  0.82 (no larger than 4 x trt effect); trt effect .223; residual variation 0.2; 10,000 simulations (radio buttons do not work here)")),
+                              #           img(src='estimate4.png', align = "right"),
+                              #           h4(paste("Figure 8 Standard error estimates")),
+                              #           img(src='se4.png', align = "right"),
+                              #           h4(paste("Table 6 Summary, sorted by smallest mean squared error (MSE) estimate")),
+                              #           img(src='summary4.png', align = "center"),
+                              # )     ,
+                              # 
                               
                               tabPanel( "99 Load",
                                         
                                         
                                         
-                                        fileInput("file1", "UPload a pre-run simulation",
+                                        fileInput(inputId="file1", "Upload a pre-run simulation",
                                                   multiple = FALSE,
                                                   accept = c(".Rdata" )),
                                         
@@ -462,7 +461,39 @@ server <- shinyServer(function(input, output   ) {
   shinyalert("Welcome! \nAdjusting for covariates in binary response RCT!",
              "Best to do it!", 
              type = "info")
-  
+ 
+
+  observeEvent__source_data__upload <- function(session, input, output, reactive__source_data) {
+    observeEvent(input$uploadFile, {
+      
+      withProgress(value=1/2, message='Loading Data',{
+        
+        upload_file_path <- input$uploadFile$datapath
+        log_message_variable('input$uploadFile$datapath', upload_file_path)
+        
+        if(!is.null(upload_file_path)) {
+          
+          if(str_sub(upload_file_path, -4) == '.csv') {
+            
+            loaded_dataset <- read.csv(upload_file_path, header=TRUE)
+            
+          } else if(str_sub(upload_file_path, -4) == '.RDS') {
+            
+            loaded_dataset <- readRDS(file=upload_file_path)
+            
+          } else {
+            
+            showModal(
+              modalDialog(title = 'Unknown File Type',
+                          'Only `.csv` and `.RDS` files are supported at this time.'))
+          }
+        }
+        shinyjs::hide('load_data__description')
+      })
+      reactive__source_data$data <- loaded_dataset
+      reactive__source_data$source <- "File Upload"
+    })
+  }
   
   # observeEvent(input$refresh, {
   #   js$refresh();
@@ -1503,22 +1534,24 @@ server <- shinyServer(function(input, output   ) {
   
  
   # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-  
+  data <- reactive({
+    req(input$file1)
+  })
   
   output$zzz <- renderPrint({
     
-    d<- NULL
-    req(input$file1)
-    d<- zz
+    # req(input$file1)
+    # d<- zz
+    d<- data()$zz
     return(d)
   })
   
   
+  
   output$resA <- renderPrint({
      
-    d<- NULL
-    req(input$file1)
-    d<- res
+   # req(input$file1)
+    d<- data()$res
     return(d)
   })
   
@@ -1526,23 +1559,26 @@ server <- shinyServer(function(input, output   ) {
   
   resZ <- reactive({
      
-    d<- NULL
-    req(input$file1)
-    res <- res
-    res2 <- res2
-    res3 <- res3
-    theta1<-theta  
-    se.<-se.
+ #   d<-file<- NULL
+  # file <- input$file1
+  #   req(file)
+    res<- data()$res
+    res2 <- data()$res2
+    res3 <- data()$res3
+    theta1<-data()$theta  
+    se.<-data()$se.
     
     return(list(  
       
       res = res ,
       res2 = res2,
       res3 = res3, 
-      theta1 =theta  ,
+      theta1 =as.data.frame(theta1)  ,
       se.=se.
     ))
   })
+  
+ 
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   #  
@@ -1552,18 +1588,17 @@ server <- shinyServer(function(input, output   ) {
   output$reg.plotL   <- renderPlot({         #means
     
     # Get the data
-    
-    res<- res2<-res3<- theta1 <- NULL
-   # req(input$file1)
-    
-    resZ <- resZ()
   
-    res <- resZ$res
-    res2 <- resZ$res2
-    res3 <- resZ$res3
-    theta1<-resZ$theta  
+    # res<- data()$res
+    # res2 <- data()$res2
+    # res3 <- data()$res3
+    # theta1<-data()$theta  
+    # se.<-data()$se. 
 
     sample <- random.sample()
+    
+    r <- resZ()
+    res <- (r$res)
     
     d1 <-  density(res[,1]) 
     d2 <-  density(res[,3] )
@@ -1697,8 +1732,7 @@ server <- shinyServer(function(input, output   ) {
     se.<-resZ$se.  
     
     sample <- random.sample()
-    
-    
+   
     
     
     d1 <-  density(res[,2] )
