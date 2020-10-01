@@ -359,16 +359,21 @@ compared to other prognostic factors [7,8].
                                         
                                         
                                         
-                                        fileInput(inputId="file1", "Upload a pre-run simulation",
-                                                  multiple = FALSE,
-                                                  accept = c(".Rdata" )),
+                                       
                                         
                                      
                                         fluidRow(
-                                          column(width = 6, offset = 0, style='padding:1px;',
+                                          
+                                         
+                                          
+                                          column(width = 8, offset = 0, style='padding:1px;',
                                                  
-                                                 div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
-                                                 div(plotOutput("reg.plotM",  width=fig.width8, height=fig.height7)),
+                                                 fileInput(inputId="file1", "Upload a pre-run simulation",
+                                                           multiple = FALSE,
+                                                           accept = c(".Rdata" )),
+                                                 
+                                               #  div(plotOutput("reg.plotL",  width=fig.width8, height=fig.height7)),
+                                                # div(plotOutput("reg.plotM",  width=fig.width8, height=fig.height7)),
                                           ) ,
                                           
                                           
@@ -380,7 +385,7 @@ compared to other prognostic factors [7,8].
                                         
                                         
                                         #div( verbatimTextOutput("resA") ),
-                                          div( verbatimTextOutput("zzz") )
+                                        tableOutput('contents3'),
                               ) ,
                               
                               tabPanel("6 Notes & references", value=3, 
@@ -462,7 +467,8 @@ server <- shinyServer(function(input, output   ) {
              "Best to do it!", 
              type = "info")
  
-
+  reactive__source_data <- reactiveValues(data=NULL, source=NULL)
+  
   observeEvent__source_data__upload <- function(session, input, output, reactive__source_data) {
     observeEvent(input$uploadFile, {
       
@@ -494,6 +500,8 @@ server <- shinyServer(function(input, output   ) {
       reactive__source_data$source <- "File Upload"
     })
   }
+  observeEvent__source_data__upload(session, input, output, reactive__source_data)
+  
   
   # observeEvent(input$refresh, {
   #   js$refresh();
@@ -1531,53 +1539,63 @@ server <- shinyServer(function(input, output   ) {
   })
   
   
+  output$contents3 <- renderTable({
+    
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(NULL)
+    isfar <- (load(inFile$datapath))
+    get((isfar)[12])
+  })
   
  
-  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-  data <- reactive({
-    req(input$file1)
-  })
-  
-  output$zzz <- renderPrint({
-    
-    # req(input$file1)
-    # d<- zz
-    d<- data()$zz
-    return(d)
-  })
-  
-  
-  
-  output$resA <- renderPrint({
-     
-   # req(input$file1)
-    d<- data()$res
-    return(d)
-  })
-  
-  
-  
-  resZ <- reactive({
-     
- #   d<-file<- NULL
-  # file <- input$file1
-  #   req(file)
-    res<- data()$res
-    res2 <- data()$res2
-    res3 <- data()$res3
-    theta1<-data()$theta  
-    se.<-data()$se.
-    
-    return(list(  
-      
-      res = res ,
-      res2 = res2,
-      res3 = res3, 
-      theta1 =as.data.frame(theta1)  ,
-      se.=se.
-    ))
-  })
-  
+ #  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#tryn
+ #  data <- reactive({
+ #    #req(input$file1)
+ # 
+ #    dataset  <- reactive__source_data$data
+ #  })
+ #  
+ #  output$zzz <- renderPrint({
+ #    
+ #    # req(input$file1)
+ #    # d<- zz
+ #    d<- data()$zz
+ #    return(d)
+ #  })
+ #  
+ #  
+ #  
+ #  output$resA <- renderPrint({
+ #     
+ #   # req(input$file1)
+ #    d<- data()$res
+ #    return(d)
+ #  })
+ #  
+ #  
+ #  
+ #  resZ <- reactive({
+ #     
+ # #   d<-file<- NULL
+ #  # file <- input$file1
+ #  #   req(file)
+ #    res<- data()$res
+ #    res2 <- data()$res2
+ #    res3 <- data()$res3
+ #    theta1<-data()$theta  
+ #    se.<-data()$se.
+ #    
+ #    return(list(  
+ #      
+ #      res = res ,
+ #      res2 = res2,
+ #      res3 = res3, 
+ #      theta1 =as.data.frame(theta1)  ,
+ #      se.=se.
+ #    ))
+ #  })
+ #  
  
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -1597,10 +1615,10 @@ server <- shinyServer(function(input, output   ) {
 
     sample <- random.sample()
     
-    r <- resZ()
-    res <- (r$res)
-    
-    d1 <-  density(res[,1]) 
+    # r <- resZ()
+    # res <- (r$res)
+      
+    d1 <-  density( res[,1]) 
     d2 <-  density(res[,3] )
     d3 <-  density(res[,5] )
     d4 <-  density(res[,7] )
@@ -1721,15 +1739,15 @@ server <- shinyServer(function(input, output   ) {
   output$reg.plotM <- renderPlot({         #standard errors
     
     # Get the  data
-    res<- res2<-res3<- se. <- NULL
-    # req(input$file1)
-    
-    resZ <- resZ()
-    
-    res <- resZ$res
-    res2 <- resZ$res2
-    res3 <- resZ$res3
-    se.<-resZ$se.  
+    # res<- res2<-res3<- se. <- NULL
+    # # req(input$file1)
+    # 
+    # resZ <- resZ()
+    # 
+    # res <- resZ$res
+    # res2 <- resZ$res2
+    # res3 <- resZ$res3
+    # se.<-resZ$se.  
     
     sample <- random.sample()
    
